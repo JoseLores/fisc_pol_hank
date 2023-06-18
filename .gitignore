@@ -68,8 +68,10 @@ ___*
 .env/installed_pip_pkgs
 .env/installed_spec.json
 !.pre-commit-config.yaml
+*.ipynb
 
 # Directories
 bld/
 bld2/
 Text/
+tables/
