@@ -73,26 +73,60 @@ def compute_weighted_mpc(c, a, a_grid, r, e_grid):
     return mpc
 
 
-# def labor_supply(w, tau_l, tau_p):
-#     """Labor supply as a function of wage and tax rates
+# GHH utility
+# def egm_step(Wa_p, a_grid, z_grid, T, R, beta, sigma_c, sigma_l):
+#     """A single backward step via EGM
 #     """
-#     return
+
+#     # MUC as implied by next periods value function
+#     ux_nextgrid = beta * Wa_p
+
+#     # consumption can be readily obtained from MUC and MU of labor
+#     c_nextgrid = ux_nextgrid**(-1/sigma_c) + z_grid/(1 + sigma_l)
+
+#     # get consumption in grid space
+#     lhs = c_nextgrid - z_grid + a_grid[None, :] - T[:, None]
+#     rhs = R * a_grid
+
+#     c = interpolate(lhs, rhs, c_nextgrid)
+
+#     # get todays distribution of assets
+#     a = rhs + z_grid + T[:, None] - c
+
+#     # fix consumption and labor for constrained households
+#     c = jnp.where(a < a_grid[0], z_grid + rhs +
+#                   T[:, None] - a_grid[0], c)
+#     a = jnp.where(a < a_grid[0], a_grid[0], a)
 
 
-def transfers(skills_stationary, T, skills_grid):
+#     uc = (c - z_grid/(1 + sigma_l)) ** (-sigma_c)
+#     # uce = skills_grid[:, None] * uc
+
+#     # calculate new MUC
+#     Wa = R * uc
+
+#     return Wa, a, c #, uce
+
+def labor_supply(w, tau_l, tau_p):
+    """Labor supply as a function of wage and tax rates
+    """
+    return
+
+
+def transfers(skills_stationary, T, Div, skills_grid):
     # hardwired incidence rules are proportional to skill; scale does not matter
-    # rule_div= skills_grid
+    rule_div = skills_grid
     # rule_tranf = 1/skills_grid
     # rule_tranf = skills_grid
     # rule_tranf = jnp.array([1.2, 1.1, 0.9, 0.8 ])
     rule_tranf = jnp.ones_like(skills_grid)
 
-    # div = Div / jnp.sum(skills_stationary * rule_div) * rule_div
+    div = Div / jnp.sum(skills_stationary * rule_div) * rule_div
     transf = T / jnp.sum(skills_stationary * rule_tranf) * rule_tranf
 
-    # T = div + transf
+    T = div + transf
 
-    return transf
+    return T
 
 
 def make_grids_pdf(rho_e, sd_e, n_e, min_a, max_a, n_a):

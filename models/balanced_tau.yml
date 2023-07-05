@@ -18,8 +18,8 @@ definitions: |
     from econpizza.tools import percentile, jax_print
 
 # these lists define the relevant models objects
-variables: [ div, DIV, y, y_prod, w, pi, R, Rn, Rr, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, T,   revenue, Z, E, zeta, MPC, lowest_q_mpc] #, tau, g , wn G, piwn , u, nn tau_l,
-parameters: [ sigma_c, sigma_l, theta, psi, phi_pi, phi_y, rho, rho_beta, rho_r, rho_z, psi_w, theta_w, wage_markup, chi, iota, rho_g, rho_B, rho_d, rho_t , rho_tau, phi_T, phi_G, tau_p, rho_zeta, tau_l]
+variables: [ div, DIV, y, y_prod, w, pi, R, Rn, Rr, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, tau_l,   revenue, Z, E, zeta, MPC, T, lowest_q_mpc] #, tau, g , wn G, piwn , u, nn tau_l,
+parameters: [ sigma_c, sigma_l, theta, psi, phi_pi, phi_y, rho, rho_beta, rho_r, rho_z, psi_w, theta_w, wage_markup, chi, iota, rho_g, rho_B, rho_d, rho_t , rho_tau, phi_T, phi_G, tau_p, rho_zeta,  phi_B]
 shocks: [ e_beta, e_rstar, e_z, e_t, e_g, e_d , e_tau, e_B, e_zeta]
 
 # this defines all distribution objects (so far, only one distribution is supported)
@@ -31,15 +31,15 @@ distributions:
     skills:
       # first dimension
       type: exogenous_rouwenhorst
-      rho: 0.966 # 0.966
-      sigma: 0.6 # 0.6
-      n: 5
+      rho: 0.97669811171 # 0.966
+      sigma: 0.90559960961 # 0.44267276788 iMPC (but quarterly)  # 0.6
+      n: 11
     a:
       # second dimension. Endogenous distribution objects require inputs from the decisions stage. An object named 'a' assumes that the decisions stage returns a variable named 'a'
       type: endogenous_log
       min: 0.0
-      max: 60
-      n: 60
+      max: 200
+      n: 100
 
 # stage one: iterating the decisions function backwards
 decisions:
@@ -88,7 +88,7 @@ aux_equations: |
     # z_grid = Z * skills_grid ** (1-tau_p) / jnp.sum(skills_stationary * (skills_grid ** (1-tau_p)))
     # aggr_z = jnp.sum(skills_stationary*z_grid)
     ########################################################################################3
-
+    # jax_print(chi)
     # mpc = compute_weighted_mpc(c, a, a_grid, Rr, skills_grid )
     e_mean = jnp.sum(skills_stationary*(skills_grid** (1-tau_p))) # average "skills" after progresive taxes
 
@@ -106,8 +106,8 @@ equations:
     # ~ Z = aggr_z
 
     # firms
-    ~ y_prod = z*n #- F # production function
-    ~ DIV = -w*n + (1 - psi*(pi/piSS - 1)**2/2)*y_prod #- F # dividends
+    ~ y_prod = z*n  # production function
+    ~ DIV = -w*n + (1 - psi*(pi/piSS - 1)**2/2)*y_prod  # dividends
     ~ div = DIV/B # dividend payout ratio
     ~ y = (1 - psi*(pi/piSS - 1)**2/2)*y_prod # "effective" output
     ~ psi*(pi/piSS - 1)*pi/piSS = (1-theta) + theta*w/z + psi*piPrime/R*(piPrime/piSS - 1)*piPrime/piSS*y_prodPrime/y_prod # NKPC
@@ -121,9 +121,11 @@ equations:
 
 
     # government
-    ~ Z = w*n - revenue # post-tax average income    #
-    ~ T  = revenue - G  - (RBr-1)*BLag # balanced    #  this works
-    ~ revenue = tau_l*w*n*E # revenue from           #
+    ~ Z = w*n - revenue # post-tax average income
+    ~ revenue = (RBr-1)*BLag + G + T
+    ~ revenue = tau_l*w*n*E
+    # ~ deficit = B - BLag # one can easily check that D = deficit
+
 
 
     ~ RBr = RLag/pi  # real ex-post bond return
@@ -140,8 +142,8 @@ equations:
     ~ beta = betaSS*(betaLag/betaSS)**rho_beta*exp(e_beta) # exogenous beta
     ~ Rstar = RstarSS*(RstarLag/RstarSS)**rho_r*exp(e_rstar) # exogenous rstar
     ~ z = zSS*(zLag/zSS)**rho_z*exp(e_z) # exogenous technology
-    # ~ B = BSS*(BLag/BSS)**rho_B*exp(e_B)
-    # ~ T = TSS**(1-rho_t)*TLag**rho_t*exp(e_t) # exogenous transfers
+    # ~ B = BSS*(BLag/BSS)**rho_B*exp(e_B) #############################
+    ~ T = TSS**(1-rho_t)*TLag**rho_t*exp(e_t) # exogenous transfers
     # ~ tau_l = tau_l**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
     ~ zeta = zeta**(1-rho_zeta)*zetaLag**rho_zeta*exp(e_zeta)
     # ~ D = DSS**(1-rho_d)*DLag**rho_d*exp(e_d) # exogenous debt
@@ -152,33 +154,35 @@ steady_state:
         sigma_c: 2 # intertemporal elasticity of substitution
         sigma_l: 2 # inverse Frisch elasticity of labour supply
         theta: 10. # elasticity of substitution
-        theta_w: 12
-        psi_w: 60
-        # chi: 0.6 # labor disutility
+        theta_w: 10. # elasticity of substitution labor
+        psi_w: 300 #300
+        chi: 0.6 # labor disutility
         wage_markup: theta_w/(theta_w - 1) # wage markup
-        psi: 60. # parameter on the costs of price adjustment
+        psi: 43 # parameter on the costs of price adjustment # Auclert iMPC would imply 40.74# bayer 67.7 # 110 MOll (but no wage stick in their mode)
         phi_pi: 1.3 # Taylor rule coefficient on inflation
         phi_y: 0. # Taylor rule coefficient on output
         rho: 0.8 # persistence in (notional) nominal interest rate
         rho_beta: 0.9 # persistence of discount factor shock
         rho_r: 0.9 # persistence of MP shock
         rho_z: 0.9 # persistence of technology shocks
-        rho_g: 0.9 # persistence of gov. spending shocks
-        rho_t: 0. # persistence of transfers shocks
-        rho_B: 0.9 # persistence of bond supply shocks
+        rho_g: 0.76 # persistence of gov. spending shocks # iMPC paper
+        rho_t: 0.7 # persistence of transfers shocks
+        rho_B: 0.93 # persistence of bond supply shocks # Aucler rognlie 2018
         rho_d: 0.7 # persistence of deficit shocks
         rho_zeta: 0.9
         iota: 0.98 # 0.98 # dnwr
-        phi_T: 0.9
-        phi_G: 0.005
+        phi_T: 0.8
+        phi_G: 0.4
+        phi_B: 1.2
         zeta: 1
-        tau_p: 0.118  # 0.120 bayers calib
+        tau_p: 0.120 # 0.120 bayers calib
         # tau_k: 0.20 # tax rate on capital income
-        tau_l: 0.2 # tax rate on labor income 0.20315766
+        # tau_l: 0.2 # tax rate on labor income 0.20315766
 
-        # steady state
-        # y: 1.0 # effective output
-        # D: 0
+         # steady state
+        y: 1.0 # effective output # either fix this or B
+        D: 0
+        deficit: 0
         # u: 0.0 # cyclical unemployment rate
         # n: 0.33
         z: 1
@@ -186,16 +190,17 @@ steady_state:
         # balance: 0
         # g: 0. # y*0.04 # gov. increase spending
         G: 0.06 # y*0.04 # gov. increase spending
-        # T: 0.08*y
+        # T: 0.0855
         # y_prod: 1.0 # output
         # C: 1.0 # consumption
         pi:  1.02^0.25 # inflation
-        # piwn: 1.02^0.25 # inflation
-        beta: 0.97 # discount factor
-        B: 5 # bond supply
+        piwn: 1.02^0.25 # inflation
+        beta: 0.95 # discount factor
+        # B: 4 # bond supply
         # MPC: 0.075
         # # tau: 0.2 # tax rate
-        Rstar: 1.04^0.25
+        Rstar: 1.02^0.25
+        # Rr: 1.04
         # div: 0
         # definitions can be recursive: theta is defined above
         # div: 1 - w*n # dividends
@@ -204,10 +209,10 @@ steady_state:
         # n: w**(1/sigma_l) # labor supply
 
     init_guesses:
-        Rstar: 1.04^0.25 # steady state target rage
+        Rstar: 1.04^0.25 # steady state target rages # if we begin with RSS it does not find the SS.
         Rr: Rstar # steady state real rage
         Rn: Rstar # steady state notional rage
         R: Rstar # steady state nominal rage
-        T: 0.0855
+        tau_l: 0.1
 
         WaPrime: egm_init(a_grid, skills_stationary)

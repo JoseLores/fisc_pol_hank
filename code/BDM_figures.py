@@ -49,8 +49,8 @@ BDM = ep.load(BDM_file)
 
 # Useful objects
 rho_omega = 0.8
-# UI_change = jnp.arange(0.001, 1.6, 0.05)
-UI_change = jnp.arange(0.2, 1.6, 0.05)
+UI_change = jnp.arange(0.001, 0.5, 0.1)
+# UI_change = jnp.arange(0.0001, 0.8001, 0.001) # takes hours
 mult_exp_high = jnp.zeros(len(UI_change))
 mult_exp_low = jnp.zeros(len(UI_change))
 mult_con_high = jnp.zeros(len(UI_change))
@@ -61,8 +61,8 @@ UI_proportion_ss = jnp.zeros(len(UI_change))
 for i, UI in enumerate(UI_change):
 
     BDM = ep.load(BDM_file)  # reload the model
-    BDM["steady_state"]["fixed_values"]["C_u"] *= UI
-    stst_result = BDM.solve_stst(1e-07)
+    BDM["steady_state"]["fixed_values"]["C_u"] = UI
+    stst_result = BDM.solve_stst(1e-07)  # 1e-07
     x0 = BDM['stst'].copy()
     UI_proportion_ss = UI_proportion_ss.at[i].set(x0['b_proportion'])
 
@@ -136,4 +136,4 @@ ax.set_xlabel(
 ax.set_ylabel('Fiscal multiplier')
 ax.legend()
 
-fig.savefig('../bld/multipliers3.pdf')
+fig.savefig('../bld/multipliers_BDM3.pdf')
