@@ -1,2 +1,2 @@
 # master_thesis
-Private repository of my thesi's workflow
+Private repository of my thesis workflow
