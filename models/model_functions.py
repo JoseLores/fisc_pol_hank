@@ -23,7 +23,6 @@ def egm_step(Wa_p, a_grid, skills_grid, z_grid, n,  T, R, beta, sigma_c, sigma_l
     # consumption can be readily obtained from MUC and MU of labor
     labor_inc = z_grid[:, None]
 
-    # this without tau works but it should be (1-tau_p)*labor_inc/(1 + sigma_l)
     c_nextgrid = ux_nextgrid**(-1/sigma_c) + (1-tau_p)*labor_inc/(1 + sigma_l)
 
     # jax_print(labor_inc)
@@ -42,20 +41,18 @@ def egm_step(Wa_p, a_grid, skills_grid, z_grid, n,  T, R, beta, sigma_c, sigma_l
                   T[:, None] - a_grid[0], c)
     a = jnp.where(a < a_grid[0], a_grid[0], a)
 
-    # uc = (c - labor_inc/(1 + sigma_l)) ** (-sigma_c)
-
-    # uc = (c - chi*skills_grid[:, None]**(1-tau_p)*n**(1+sigma_l)/(1+sigma_l)) ** (-sigma_c) # does not work ;(
-    # uce = skills_grid[:, None] * uc
-
-    # this without tau works but it should be (1-tau_p)*labor_inc/(1 + sigma_l)
     uc = (c - (1-tau_p)*labor_inc/(1 + sigma_l)) ** (-sigma_c)
     # calculate new MUC
     Wa = R * uc
 
-    return Wa, a, c
+    # uce = uc * skills_grid[:, None] ** (1-tau_p) / jnp.sum(skills_stationary * (skills_grid ** (1-tau_p)))
+
+    uce = uc * skills_grid[:, None] ** (1-tau_p)
+
+    return Wa, a, c, uce
 
 
-def compute_weighted_mpc(c, a, a_grid, r, e_grid):
+def compute_weighted_mpc(c, a, a_grid, r, e_grid, tau_p):
     """Approximate mpc out of wealth, with symmetric differences where possible, exactly setting mpc=1 for constrained agents."""
     mpc = jnp.empty_like(c)
     post_return = r * a_grid
@@ -68,49 +65,9 @@ def compute_weighted_mpc(c, a, a_grid, r, e_grid):
                             (post_return[-1] - post_return[-2]))
 
     mpc = jnp.where(a == a_grid[0], 1, mpc)
-    mpc = mpc * e_grid[:, None]
+    mpc = mpc * e_grid[:, None]**(1-tau_p)
 
     return mpc
-
-
-# GHH utility
-# def egm_step(Wa_p, a_grid, z_grid, T, R, beta, sigma_c, sigma_l):
-#     """A single backward step via EGM
-#     """
-
-#     # MUC as implied by next periods value function
-#     ux_nextgrid = beta * Wa_p
-
-#     # consumption can be readily obtained from MUC and MU of labor
-#     c_nextgrid = ux_nextgrid**(-1/sigma_c) + z_grid/(1 + sigma_l)
-
-#     # get consumption in grid space
-#     lhs = c_nextgrid - z_grid + a_grid[None, :] - T[:, None]
-#     rhs = R * a_grid
-
-#     c = interpolate(lhs, rhs, c_nextgrid)
-
-#     # get todays distribution of assets
-#     a = rhs + z_grid + T[:, None] - c
-
-#     # fix consumption and labor for constrained households
-#     c = jnp.where(a < a_grid[0], z_grid + rhs +
-#                   T[:, None] - a_grid[0], c)
-#     a = jnp.where(a < a_grid[0], a_grid[0], a)
-
-
-#     uc = (c - z_grid/(1 + sigma_l)) ** (-sigma_c)
-#     # uce = skills_grid[:, None] * uc
-
-#     # calculate new MUC
-#     Wa = R * uc
-
-#     return Wa, a, c #, uce
-
-def labor_supply(w, tau_l, tau_p):
-    """Labor supply as a function of wage and tax rates
-    """
-    return
 
 
 def transfers(skills_stationary, T, Div, skills_grid):

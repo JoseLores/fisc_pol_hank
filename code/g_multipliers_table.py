@@ -53,7 +53,7 @@ def impulse_response(shock_G, shock_beta, model):
 
 
 def generate_latex_table(results, changes):
-    column_names = ['Shock'] + [name if val is None else f"$\{key}={val}$"
+    column_names = ['Shock'] + ['Baseline' if val is None else f"$\{key}={val}$"
                                 for name, change in changes.items() for key, val in (change or {}).items()]
 
     latex_table = '\\begin{tabular}{l' + \
@@ -93,10 +93,10 @@ results = {}
 changes = {
     'baseline': None,
     'generous': {'tau_p': 0.132},
-    'regresive': {'tau_p': 0.081},
+    'regresive': {'tau_p': 0.084},
     'high_psiw': {'psi': 67},
-    'Hawkish': {'phi_pi': 1.7}
-    # 'ZLB': {'Rstar': 0.99} ?
+    'Hawkish': {'phi_pi': 1.7},
+    'ZLB': {'Rstar': 1, 'pi': 1}
 }
 
 for i, model_path in enumerate(model_paths):
@@ -122,7 +122,11 @@ for i, model_path in enumerate(model_paths):
         stst_result = model.solve_stst(maxit=40)
 
         # Compute the multipliers
-        baseline, intervention = impulse_response(1.01, b, model)
+        if case == 'ZLB':
+            baseline, intervention = impulse_response(1.01, 1.0005, model)
+        else:
+            baseline, intervention = impulse_response(1.01, b, model)
+
         multiplier = compute_mult(intervention, baseline, model)
 
         # Save the results for this model
@@ -133,7 +137,7 @@ for i, model_path in enumerate(model_paths):
 # Generate the LaTeX table
 latex_table = generate_latex_table(results, changes)
 
-with open('../tables/multiplier_table_G_lospsi.tex', 'w') as f:
+with open('../tables/multiplier_table_G_def2.tex', 'w') as f:
     f.write(latex_table)
 
 
@@ -162,7 +166,7 @@ with open('../tables/multiplier_table_G_lospsi.tex', 'w') as f:
 # # Model 3
 # print('Model 3')
 # hank1_dict = ep.parse(hank_baseline_path)
-# hank1_dict['steady_state']['fixed_values']['tau_p'] = 0.81 # optimal
+# hank1_dict['steady_state']['fixed_values']['tau_p'] = 0.84 # optimal
 # hank_regresive = ep.load(hank1_dict)
 # stst_result = hank_regresive.solve_stst(maxit=40)
 

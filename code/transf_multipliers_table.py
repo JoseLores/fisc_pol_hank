@@ -28,9 +28,9 @@ def compute_mult(intervention, baseline, model):
 
     # Calculate the changes in output and government spending
     output_difference = jnp.sum(
-        intervention[1:200, ind_y] - baseline[1:200, ind_y])
+        intervention[1:80, ind_y] - baseline[1:80, ind_y])
     government_transfers_difference = jnp.sum(
-        intervention[1:200, ind_T] - baseline[1:200, ind_T])
+        intervention[1:80, ind_T] - baseline[1:80, ind_T])
 
     # Compute the fiscal multipliers
     fiscal_multiplier = output_difference / government_transfers_difference
@@ -43,17 +43,17 @@ def impulse_response(shock_T, shock_beta, model):
     x0 = model['stst'].copy()
     x0['beta'] *= shock_beta
 
-    baseline, _ = model.find_path(init_state=x0.values())
-
+    baseline, _ = model.find_path(init_state=x0.values(), maxit=70)
     shock = ('e_t', shock_T-1)
 
-    intervention, _ = model.find_path(init_state=x0.values(), shock=shock)
+    intervention, _ = model.find_path(
+        init_state=x0.values(), shock=shock, maxit=70)
 
     return baseline, intervention
 
 
 def generate_latex_table(results, changes):
-    column_names = ['Shock'] + [name if val is None else f"$\{key}={val}$"
+    column_names = ['Shock'] + ['Baseline' if val is None else f"$\{key}={val}$"
                                 for name, change in changes.items() for key, val in (change or {}).items()]
 
     latex_table = '\\begin{tabular}{l' + \
@@ -93,10 +93,10 @@ results = {}
 changes = {
     'baseline': None,
     'generous': {'tau_p': 0.132},
-    'regresive': {'tau_p': 0.081},
-    'high_psiw': {'psi': 110},
-    'Hawkish': {'phi_pi': 1.7}
-    # 'ZLB': {'Rstar': 0.99} # fails
+    'regresive': {'tau_p': 0.084},
+    'high_psiw': {'psi': 67},
+    'Hawkish': {'phi_pi': 1.5},
+    'ZLB': {'Rstar': 1, 'pi': 1}  # fails
 }
 
 for i, model_path in enumerate(model_paths):
@@ -122,7 +122,11 @@ for i, model_path in enumerate(model_paths):
         stst_result = model.solve_stst(maxit=40)
 
         # Compute the multipliers
-        baseline, intervention = impulse_response(1.01, b, model)
+        if case == 'ZLB':
+            baseline, intervention = impulse_response(1.01, 1.0002, model)
+        else:
+            baseline, intervention = impulse_response(1.01, b, model)
+
         multiplier = compute_mult(intervention, baseline, model)
 
         # Save the results for this model
@@ -133,5 +137,5 @@ for i, model_path in enumerate(model_paths):
 # Generate the LaTeX table
 latex_table = generate_latex_table(results, changes)
 
-with open('../tables/multiplier_table_transfers_lesspsi2.tex', 'w') as f:
+with open('../tables/multiplier_table_transfers_new.tex', 'w') as f:
     f.write(latex_table)

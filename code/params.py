@@ -11,16 +11,16 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Set the current working directory to the directory of the script
 os.chdir(current_dir)
 
-model_path = '../models/debt_financed_tau.yml'
+model_path = '../models/good_MPC_debt.yml'
 
-varlist = ['y', 'C', 'G', 'pi', 'n', 'DIV', 'MPC', 'Z', 'R',
-           'B', 'revenue', 'w', 'T', 'RBr', 'tau_l']
+varlist = ['y', 'C', 'G', 'pi', 'n', 'DIV', 'MPC', 'Z', 'R', 'piwn',
+           'B', 'revenue', 'w', 'T', 'RBr', 'tau_l', 'D']
 
 param_name = 'psi'
-shock = ("e_g", 0.01)
-param_vals = [20, 40, 60, 80, 100]
-save_dir = "psi"
-Palette = 'Blues'
+shock = ("e_t", 0.01)
+param_vals = [20, 40, 60, 80, 100, 120]
+save_dir = "goof_psi_transfer"
+Palette = 'Greens'
 # models, IRF_list = plot_IRFs(model_paths, varlist, shock, save_dir)
 # initial_conditions = {'B': 1.001, 'G': 1.01}
 IRF_list = plot_dif_params(model_path, varlist, shock,

@@ -1,6 +1,7 @@
 from grgrlib import grbar3d
 from grgrlib import figurator, grplot
 import econpizza as ep
+from econpizza.tools import percentile
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import os
@@ -77,7 +78,14 @@ def plot_IRFs_init_cond(model_paths, varlist, init_conds, save_dir):
     return models, IRF_list
 
 
-def plot_IRFs(model_paths, model_names, varlist, shock, T, save_dir):
+def plot_IRFs(model_paths, model_names, varlist, varnames, shock, T, save_dir):
+
+    if len(model_paths) != len(model_names):
+        raise ValueError("Number of models and model names must be the same")
+
+    if len(varnames) != len(varlist):
+        raise ValueError("Length of varlist and varnames must be the same")
+
     models = []
     steady_states = []
     IRF_list = []
@@ -109,7 +117,7 @@ def plot_IRFs(model_paths, model_names, varlist, shock, T, save_dir):
             ss = steady_states[j]
             inds = inds_models[j]
             # We don't want interest rate as a percentage deviation
-            if varlist[i] in {'R', 'Rn', 'Rr', 'pi', 'Rstar', 'Top10C', 'Top10A', 'RBr', 'MPC', 'lowest_q_mpc'}:
+            if varlist[i] in {'R', 'Rn', 'Rr', 'Rstar', 'Top10C', 'Top10A', 'RBr', 'MPC', 'lowest_q_mpc'}:
                 ax.plot(
                     (path[0:T, inds[i]]),
                     marker="o",
@@ -140,7 +148,7 @@ def plot_IRFs(model_paths, model_names, varlist, shock, T, save_dir):
                 )
                 ax.set_ylabel("Percent")
 
-        ax.set_title(varlist[i], size="18")
+        ax.set_title(varnames[i], size="22")
         ax.set_xlabel("Quarters")
         ax.legend()
         plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
@@ -181,7 +189,7 @@ def plot_shocks(model_path, varlist, shock_name, shock_vals, T, Palette, save_di
         fig, ax = plt.subplots(figsize=(8, 5))
         for j, path in enumerate(paths):
             color = cmap(float(j+1)/len(paths))   # Use colormap
-            ss = steady_states[j]
+
             # We don't want interest rate as a percentage deviation
             if varlist[i] in {'R', 'Rn', 'Rr', 'pi', 'Rstar', 'Top10C', 'Top10A', 'RBr', 'MPC', 'lowest_q_mpc'}:
                 ax.plot(
@@ -202,7 +210,7 @@ def plot_shocks(model_path, varlist, shock_name, shock_vals, T, Palette, save_di
                     linewidth=2.3,
                     color=color
                 )
-                ax.axhline(0, color='red', linestyle='dotted')  # Add this line
+                ax.axhline(0, color='k', linestyle='dotted')  # Add this line
                 ax.set_ylabel("Value")
             else:
                 # plot as % deviation from Steady State
@@ -217,7 +225,7 @@ def plot_shocks(model_path, varlist, shock_name, shock_vals, T, Palette, save_di
                 )
                 ax.set_ylabel("Percent")
 
-        ax.set_title(varlist[i], size="18")
+        ax.set_title(varlist[i], size="22")
         ax.set_xlabel("Quarters")
         ax.legend()
         plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
@@ -292,7 +300,7 @@ def plot_dif_params(model_path, varlist, shock, param_name, param_vals, T, Palet
                 )
                 ax.set_ylabel("Percent")
 
-        ax.set_title(varlist[i], size="18")
+        ax.set_title(varlist[i], size="22")
         ax.set_xlabel("Quarters")
         ax.legend()
         plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
@@ -335,7 +343,10 @@ def plot_wealth_distribution(IRF_list, model_list, save_dir):
         plt.close()
 
 
-def plot_transition(model, varlist, new_states, T, save_dir):
+def plot_transition(model, varlist, varnames, new_states, T, save_dir):
+
+    if len(varlist) != len(varnames):
+        raise ValueError("varlist and varnames must be of same length")
 
     # Create directories for saving the plots
     _create_directory(save_dir)
@@ -343,7 +354,7 @@ def plot_transition(model, varlist, new_states, T, save_dir):
     model_dict = ep.parse(model)
     # compile the model
     mod = ep.load(model_dict)
-    _ = mod.solve_stst(maxit=60)
+    _ = mod.solve_stst(maxit=40)
     x0 = mod['stst'].copy()
 
     for key, value in new_states.items():
@@ -364,20 +375,239 @@ def plot_transition(model, varlist, new_states, T, save_dir):
             (xst[:T, inds[i]]),
             marker="o",
             linestyle="-",
+            linewidth=2.5,
+            color='xkcd:steel blue',
             # label=f"Model {j}",
+            # color = (0.2, 0.2, 0.2),
             alpha=0.9,
         )
-        ax.hlines(y=x0[varlist[i]], xmin=0, xmax=T,
-                  colors='xkcd:steel blue', linestyles='dashed', label='Old SS')
-        ax.hlines(y=y0[varlist[i]], xmin=0, xmax=T,
-                  colors='xkcd:sage green', linestyles='dashed', label='New SS')
+        ax.hlines(y=x0[varlist[i]], xmin=-2, xmax=T+2,
+                  colors='xkcd:sage green', linestyles='dashed', label='Old SS', linewidth=2)  # xkcd:steel blue
+        ax.hlines(y=y0[varlist[i]], xmin=-2, xmax=T+2,
+                  colors='#fd5956', linestyles='dashed', label='New SS', linewidth=2)  # xkcd:sage green
 
-        ax.set_ylabel("Value")
+        # ax.set_ylabel("Value")
+        ax.set_xlim(-2, T+2)
 
-        ax.set_title(varlist[i], size="18")
+        ax.set_title(varnames[i], size="22")
         ax.set_xlabel("Quarters")
-        ax.legend()
+        ax.legend()  # fontsize='large'
         plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
         plt.close()
 
     return xst
+
+
+def plot_consumption_changes_skill(model, new_states, save_dir):
+
+    # Create directories for saving the plots
+    _create_directory(save_dir)
+
+    model_dict = ep.parse(model)
+    # compile the model
+    mod = ep.load(model_dict)
+    _ = mod.solve_stst(maxit=40)
+    x0 = mod['stst'].copy()
+
+    for key, value in new_states.items():
+        model_dict['steady_state']['fixed_values'][key] = value
+
+    mod_2 = ep.load(model_dict)
+    _ = mod_2.solve_stst(maxit=40)
+    y0 = mod_2['stst'].copy()
+
+    c0 = mod['steady_state']['decisions']['c']
+    dist0 = mod['steady_state']['distributions'][0]
+
+    c1 = mod_2['steady_state']['decisions']['c']
+    dist1 = mod_2['steady_state']['distributions'][0]
+
+    avg_c0 = jnp.sum(dist0 * c0, axis=1)
+    avg_c1 = jnp.sum(dist1 * c1, axis=1)
+
+    percentage_change = ((avg_c1 - avg_c0) / avg_c0) * 100
+
+    deciles = jnp.arange(1, 1+len(c0[:, 0]))
+
+    bar_width = 0.8  # Width of the bars
+    zero_line_width = 2.0  # Width of the zero line
+
+    fig, ax = plt.subplots()
+    bars = ax.bar(deciles, percentage_change, width=bar_width, align='center')
+
+    # Set the 0 value line
+    ax.axhline(y=0, color='red', linewidth=zero_line_width)
+
+    # Customize the appearance
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.yaxis.grid(True, linestyle='dashed', alpha=0.5)
+    ax.set_axisbelow(True)
+
+    # Add labels and title
+    plt.xlabel('Skill level')
+    plt.ylabel('Percentage Change in Consumption')
+    # plt.title('Percentage Change in Consumption for Each Decile')
+
+    # Add value labels on top of each bar
+    for bar in bars:
+        height = bar.get_height()
+        if height > 0:
+            ax.text(bar.get_x() + bar.get_width() / 2, height,
+                    f'{height:.1f}%', ha='center', va='bottom')
+        else:
+            ax.text(bar.get_x() + bar.get_width() / 2, height,
+                    f'{height:.1f}%', ha='center', va='top')
+
+    # Adjust the y-axis limits to center the 0 value
+    max_value = jnp.max(percentage_change)
+    min_value = jnp.min(percentage_change)
+    y_max = max(abs(max_value), abs(min_value)) * 1.1
+    plt.ylim(-y_max, y_max)
+
+    plt.tight_layout()
+
+    plt.savefig(os.path.join("../bld", save_dir,
+                'consumption_changes_skill.pdf'))
+    plt.close()
+
+
+def plot_consumption_changes_deciles(model, new_states, save_dir):
+
+    # Create directories for saving the plots
+    _create_directory(save_dir)
+
+    model_dict = ep.parse(model)
+    # compile the model
+    mod = ep.load(model_dict)
+    _ = mod.solve_stst(maxit=40)
+    x0 = mod['stst'].copy()
+
+    for key, value in new_states.items():
+        model_dict['steady_state']['fixed_values'][key] = value
+
+    mod_2 = ep.load(model_dict)
+    _ = mod_2.solve_stst(maxit=40)
+    y0 = mod_2['stst'].copy()
+
+    c0 = mod['steady_state']['decisions']['c']
+    dist0 = mod['steady_state']['distributions'][0]
+
+    c1 = mod_2['steady_state']['decisions']['c']
+    dist1 = mod_2['steady_state']['distributions'][0]
+
+    consumption_dist0 = _calculate_consumption_percentiles(c0, dist0)
+    consumption_dist1 = _calculate_consumption_percentiles(c1, dist1)
+
+    deciles = jnp.arange(1, 11)
+
+    percentage_change = (
+        (consumption_dist1 - consumption_dist0) / consumption_dist0) * 100
+
+    bar_width = 0.8  # Width of the bars
+    zero_line_width = 2.0  # Width of the zero line
+
+    fig, ax = plt.subplots()
+    bars = ax.bar(deciles, percentage_change, width=bar_width, align='center')
+
+    # Set the 0 value line
+    ax.axhline(y=0, color='red', linewidth=zero_line_width)
+
+    # Customize the appearance
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.yaxis.grid(True, linestyle='dashed', alpha=0.5)
+    ax.set_axisbelow(True)
+
+    # Add labels and title
+    plt.xlabel('Consumption Decile')
+    plt.ylabel('Percentage Change in Consumption')
+    # plt.title('Percentage Change in Consumption for Each Decile')
+
+    # Add value labels on top of each bar
+    for bar in bars:
+        height = bar.get_height()
+        if height > 0:
+            ax.text(bar.get_x() + bar.get_width() / 2, height,
+                    f'{height:.1f}%', ha='center', va='bottom')
+        else:
+            ax.text(bar.get_x() + bar.get_width() / 2, height,
+                    f'{height:.1f}%', ha='center', va='top')
+
+    # Adjust the y-axis limits to center the 0 value
+    max_value = jnp.max(percentage_change)
+    min_value = jnp.min(percentage_change)
+    y_max = max(abs(max_value), abs(min_value)) * 1.1
+    plt.ylim(-y_max, y_max)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join("../bld", save_dir,
+                'consumption_changes_decile.pdf'))
+    plt.close()
+
+
+def _calculate_consumption_percentiles(C, dist):
+    flattened_C = C.flatten()
+    flattened_dist = dist.flatten()
+
+    sorted_indices = jnp.argsort(flattened_C)
+    sorted_C = flattened_C[sorted_indices]
+    sorted_dist = flattened_dist[sorted_indices]
+
+    cumulative_sum = jnp.cumsum(sorted_dist)
+    total_sum = cumulative_sum[-1]
+    cdf = cumulative_sum / total_sum
+
+    percentiles = jnp.arange(0.1, 100, 10)
+    consumption_percentiles = []
+
+    for percentile in percentiles:
+        indices_greater = jnp.where(cdf >= percentile / 100)
+        if indices_greater[0].size == 0:
+            # Handle the case where no elements satisfy the condition.
+            consumption = jnp.nan
+        else:
+            index = indices_greater[0][0]
+            consumption = sorted_C[index]
+        consumption_percentiles.append(consumption)
+
+    return jnp.array(consumption_percentiles)
+
+
+def _calculate_average_consumption_percentiles(C, dist):
+    flattened_C = C.flatten()
+    flattened_dist = dist.flatten()
+
+    sorted_indices = jnp.argsort(flattened_C)
+    sorted_C = flattened_C[sorted_indices]
+    sorted_dist = flattened_dist[sorted_indices]
+
+    cumulative_sum = jnp.cumsum(sorted_dist)
+    cdf = cumulative_sum / cumulative_sum[-1]
+
+    # start from 0.01 to avoid problems
+    percentiles = jnp.arange(0.01, 101, 10)
+    average_consumption_percentiles = []
+
+    for i in range(len(percentiles) - 1):
+        start_percentile = percentiles[i] / 100
+        end_percentile = percentiles[i + 1] / 100
+
+        start_index = jnp.searchsorted(cdf, start_percentile, side='left')
+        end_index = jnp.searchsorted(cdf, end_percentile, side='right')
+
+        if start_index == end_index:
+            # Handle case where start_index and end_index are the same
+            # keep it as an array
+            consumption_within_percentile = sorted_C[start_index:start_index+1]
+        else:
+            consumption_within_percentile = sorted_C[start_index:end_index]
+
+        if consumption_within_percentile.size > 0:
+            average_consumption = jnp.mean(consumption_within_percentile)
+        else:
+            average_consumption = jnp.nan
+
+        average_consumption_percentiles.append(average_consumption)
+
+    return jnp.array(average_consumption_percentiles)

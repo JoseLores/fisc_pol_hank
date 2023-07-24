@@ -11,15 +11,15 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Set the current working directory to the directory of the script
 os.chdir(current_dir)
 
-model_path = '../models/balanced_tau.yml'
+model_path = '../models/debt_shock_T.yml'
 
-varlist = ['y', 'C', 'G', 'pi', 'n', 'DIV', 'MPC', 'Z', 'R',
+varlist = ['y', 'C', 'D', 'G', 'pi', 'n', 'DIV', 'MPC', 'Z', 'R', 'RBr',
            'B', 'revenue', 'w', 'T', 'RBr', 'tau_l']
 
-shock_name = 'e_g'
-shock_vals = [0.01, 0.02, 0.03, 0.04, 0.05]
-save_dir = "shocks_try"
-Palette = 'Blues'
+shock_name = 'e_d'
+shock_vals = [0.0025, 0.005, 0.0075, 0.01, 0.0125]
+save_dir = "deficit_shocks_transfers"
+Palette = 'Purples'
 # models, IRF_list = plot_IRFs(model_paths, varlist, shock, save_dir)
 # initial_conditions = {'B': 1.001, 'G': 1.01}
 IRF_list = plot_shocks(model_path, varlist, shock_name,

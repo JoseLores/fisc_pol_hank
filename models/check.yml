@@ -12,7 +12,7 @@ definitions: |
     from econpizza.tools import percentile, jax_print
 
 # these lists define the relevant models objects
-variables: [ DIV, y, y_prod, w, pi, R, Rn, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, T,   revenue, Z, E, zeta, MPC, lowest_q_mpc, tau_l, UC] #, tau, g , wn G, piwn , u, nn tau_l,
+variables: [ DIV, y, y_prod, w, pi, R, Rn, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, T,   revenue, Z, E, zeta, MPC, lowest_q_mpc, tau_l, D, UC, deficit] #, tau, g , wn G, piwn , u, nn tau_l,
 parameters: [ sigma_c, sigma_l, theta, psi, phi_pi, phi_y, rho, rho_beta, rho_r, rho_z, psi_w, theta_w, wage_markup, chi, iota, rho_g, rho_B, rho_d, rho_t , rho_tau, phi_T, phi_G, tau_p, rho_zeta,  phi_B,  gamma_bb, gamma_bp, gamma_by, gamma_B, gamma_y] #, gamma_by # , gamma_bb, gamma_bp
 shocks: [ e_beta, e_rstar, e_z, e_t, e_g, e_d , e_tau, e_B, e_zeta]
 
@@ -60,6 +60,8 @@ aux_equations: |
     # average "skills" after progresive taxes
     e_mean = jnp.sum(skills_stationary*(skills_grid** (1-tau_p)))
 
+    jax_print(chi)
+
 # final/main stage: aggregate equations
 equations:
 
@@ -89,9 +91,11 @@ equations:
 
     # government
     ~ Z = w*n - revenue # post-tax average income
-    ~ revenue = (RBr-1)*BLag + G + T
+    ~ D  = (RBr-1)*BLag + G + T - revenue  # deficit
     ~ revenue = tau_l*w*n*E
-    # ~ deficit = B - BLag # one can easily check that D = deficit
+    ~ deficit = B - BLag # one can easily check that D = deficit
+    # ~ tau_l/tau_lSS  = (tau_lLag/tau_lSS)**rho_tau*(B/BSS)**((1-rho_tau)*gamma_B)
+
 
     ~ RBr = RLag/pi  # real ex-post bond return
     # ~ Rr = RBr + div # real return of holding wealth
@@ -107,10 +111,12 @@ equations:
     ~ beta = betaSS*(betaLag/betaSS)**rho_beta*exp(e_beta) # exogenous beta
     ~ Rstar = RstarSS*(RstarLag/RstarSS)**rho_r*exp(e_rstar) # exogenous rstar
     ~ z = zSS*(zLag/zSS)**rho_z*exp(e_z) # exogenous technology
+    # ~ B = BSS*(BLag/BSS)**rho_B*exp(e_B)
+    # ~ d = (dLag/dSS)**rho_B*exp(e_B) # exogenous debt
     ~ T = TSS**(1-rho_t)*TLag**rho_t*exp(e_t) # exogenous transfers
     # ~ tau_l = tau_l**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
     ~ zeta = zeta**(1-rho_zeta)*zetaLag**rho_zeta*exp(e_zeta)
-    # ~ D = DSS**(1-rho_d)*DLag**rho_d*exp(e_d) # exogenous debt
+    ~ D = rho_d * DLag + (BSS-B)*0.005 + e_d # exogenous debt # this works
 
 
 steady_state:
@@ -121,7 +127,7 @@ steady_state:
         theta: 10. # elasticity of substitution
         theta_w: 10. # elasticity of substitution labor
         psi_w:  322.58
-        chi: 0.60013305 # labor disutility
+        # chi: 0.60013305 # labor disutility
         wage_markup: theta_w/(theta_w - 1) # wage markup
         psi:  43.1 # 37.03 #67.7 # parameter on the costs of price adjustment
         phi_pi: 1.2 # Taylor rule coefficient on inflation
@@ -163,17 +169,17 @@ steady_state:
         z: 1 # technology
         # G: 0.0922 # y*0.04 # gov. increase spending
         # C: y-G
-        G: 0.0922 # y*0.04 # gov. increase spending
+        G: 0.09 # y*0.04 # gov. increase spending
         # RBr: 1
         T: 0.082
         # y_prod: 1.0 # output
         # C: 1.0 # consumption
         pi:  1.02^0.25 # inflation
         # piwn: pi # wage inflation
-        beta: 0.95382926  # discount factor
-        # B: 1.2 # bond supply
+        # beta: 0.95382926  # discount factor
+        B: 1.2 # bond supply
         # MPC: 0.15
-        tau_l: 0.20207428  #tax rate # clears government budget
+        # tau_l: 0.20207428  #tax rate # clears government budget
         Rstar: 1.02^0.25
         # RBr: 1S
 
@@ -189,7 +195,7 @@ steady_state:
         # G: 0.1
         # B: 1.2
         # # DIV: 0.1
-        # chi: 0.6
+        chi: 0.6
         UC: 1
 
 
