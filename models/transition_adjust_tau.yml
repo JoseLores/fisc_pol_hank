@@ -12,7 +12,7 @@ definitions: |
     from econpizza.tools import percentile, jax_print
 
 # these lists define the relevant models objects
-variables: [ DIV, y, y_prod, w, pi, R, Rn, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, T,   revenue, Z, E, zeta, MPC, lowest_q_mpc, tau_l, D, UC, deficit] #, tau, g , wn G, piwn , u, nn tau_l,
+variables: [ DIV, y, y_prod, w, pi, R, Rn, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, T,   revenue, Z, E, zeta, MPC, lowest_q_mpc, tau_l, D, UC] #, tau, g , wn G, piwn , u, nn tau_l,
 parameters: [ sigma_c, sigma_l, theta, psi, phi_pi, phi_y, rho, rho_beta, rho_r, rho_z, psi_w, theta_w, wage_markup, chi, iota, rho_g, rho_B, rho_d, rho_t , rho_tau, phi_T, phi_G, tau_p, rho_zeta,  phi_B,  gamma_bb, gamma_bp, gamma_by, gamma_B, gamma_y] #, gamma_by # , gamma_bb, gamma_bp
 shocks: [ e_beta, e_rstar, e_z, e_t, e_g, e_d , e_tau, e_B, e_zeta]
 
@@ -91,7 +91,7 @@ equations:
     ~ Z = w*n - revenue # post-tax average income
     ~ D  = (RBr-1)*BLag + G + T - revenue  # deficit
     ~ revenue = tau_l*w*n*E
-    ~ deficit = B - BLag # one can easily check that D = deficit
+    # ~ deficit = B - BLag # one can easily check that D = deficit
     ~ tau_l/tau_lSS  = (tau_lLag/tau_lSS)**rho_tau*(BLag/BSS)**((1-rho_tau)*gamma_B)
 
 
@@ -114,7 +114,7 @@ equations:
     ~ T = TSS**(1-rho_t)*TLag**rho_t*exp(e_t) # exogenous transfers
     # ~ tau_l = tau_l**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
     ~ zeta = zeta**(1-rho_zeta)*zetaLag**rho_zeta*exp(e_zeta)
-    # ~ D = rho_d * DLag + (BSS-B)*0.025 + e_d # exogenous debt # this works
+    # ~ D = DSS*(DLag/DSS)**rho_d*(B/BSS)**(gamma_B*(1-rho_d))*exp(e_t)**phi_T # exogenous debt
 
 
 steady_state:
@@ -146,8 +146,8 @@ steady_state:
         zeta: 1
         tau_p: 0.120 # 0.120
         # bayers calib
-        rho_tau: 0.414
-        gamma_B: 0.55 #2.3 0.13
+        rho_tau: 0.8
+        gamma_B: 0.4 #0.4
         gamma_y: 1.5
 
 
@@ -158,7 +158,7 @@ steady_state:
         # tau_l: 0.175 # tax rate on labor income 0.20315766
 
         # steady state
-        y: 1.0 # effective output
+        # y: 1.0 # effective output
         D: 0
         deficit: 0
         # u: 0.0 # cyclical unemployment rate
@@ -174,11 +174,12 @@ steady_state:
         # C: 1.0 # consumption
         pi:  1.02^0.25 # inflation
         # piwn: pi # wage inflation
-        # beta: 0.94517285 # discount factor
-        # B: 1.2 # bond supply 1.24017508 for MPC = 0.18 exact
-        # MPC: 0.18
-        tau_l: 0.20207428  #tax rate # clears government budget
-        Rstar: 1.02^0.25
+        beta: 0.93880593  # discount factor
+        B: 0.97122222 # bond supply
+        # MPC: 0.26
+        # tau_l: 0.20207428  #tax rate # clears government budget
+        # Top10A: 0.72
+        # Rstar: 1.02^0.25
         # RBr: 1S
 
 

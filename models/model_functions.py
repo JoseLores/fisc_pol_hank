@@ -86,25 +86,6 @@ def transfers(skills_stationary, T, Div, skills_grid):
     return T
 
 
-def make_grids_pdf(rho_e, sd_e, n_e, min_a, max_a, n_a):
-    e_grid, e_pdf, Pi = sj.grids.markov_rouwenhorst(rho_e, sd_e, n_e)
-    a_grid = sj.grids.asset_grid(min_a, max_a, n_a)
-    return e_grid, e_pdf, Pi, a_grid
-
-
-def pre_tax_lincome(w, N, e_grid):
-    Y = w*N
-    y_grid = Y * e_grid[:, None]
-    return y_grid  # pre tax income
-
-
-def pre_tax_lincome_cyclical(w, N, e_grid, e_stationary, zeta):
-    Y = w*N
-    y_grid = Y * e_grid ** (1 + zeta * jnp.log(Y)) / \
-        jnp.vdot(e_grid ** (1 + zeta * jnp.log(Y)), e_stationary)
-    return y_grid  # pre tax income
-
-
 def post_tax_lincome(y_grid, tau_l, tau_p):
     # tau_p is the progressivity of the tax system = 0 is equivalent to previous model
     z_grid = (1-tau_l)*y_grid**(1-tau_p)

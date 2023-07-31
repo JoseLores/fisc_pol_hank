@@ -13,11 +13,11 @@ os.chdir(current_dir)
 
 model_path = '../models/debt_shock_T.yml'
 
-varlist = ['y', 'C', 'D', 'G', 'pi', 'n', 'DIV', 'MPC', 'Z', 'R', 'RBr',
+varlist = ['y', 'C', 'D', 'G', 'pi', 'n', 'DIV', 'Z', 'R', 'RBr',
            'B', 'revenue', 'w', 'T', 'RBr', 'tau_l']
 
 shock_name = 'e_d'
-shock_vals = [0.0025, 0.005, 0.0075, 0.01, 0.0125]
+shock_vals = [0.00025, 0.0005, 0.00075, 0.001, 0.00125]
 save_dir = "deficit_shocks_transfers"
 Palette = 'Purples'
 # models, IRF_list = plot_IRFs(model_paths, varlist, shock, save_dir)

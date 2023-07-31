@@ -147,7 +147,7 @@ steady_state:
         tau_p: 0.120 # 0.120
         # bayers calib
         rho_tau: 0.414
-        gamma_B: 0.6 #0.4
+        gamma_B: 0.4 #0.4
         gamma_y: 1.5
 
 

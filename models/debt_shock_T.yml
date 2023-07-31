@@ -116,7 +116,7 @@ equations:
     ~ Rstar = RstarSS*(RstarLag/RstarSS)**rho_r*exp(e_rstar) # exogenous rstar
     ~ z = zSS*(zLag/zSS)**rho_z*exp(e_z) # exogenous technology
     # ~ B = BSS*(BLag/BSS)**rho_B*exp(e_B)
-    ~ D = rho_d * DLag + (BSS-B)*0.025 + e_d # exogenous debt # this works
+    ~ D = rho_d * DLag + (BSS-B)*0.005 + e_d # exogenous debt # this works
     # ~ D = rho_d * DLag + (BSS-B)**0.1 + e_d
     # ~ T = TSS**(1-rho_t)*TLag**rho_t*exp(e_t) # exogenous transfers
     ~ tau_l = tau_l**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
@@ -146,15 +146,12 @@ steady_state:
         rho_B: 0.9 # persistence of bond supply shocks
         rho_d: 0.9 # persistence of deficit shocks
         rho_zeta: 0.9
-        iota: 0. # 0.98 # dnwr
-        phi_T: 0.3
-        phi_G: 0.06
-        phi_B: 1.2
+        iota: 0 # 0.98 # dnwr
         zeta: 1
         tau_p: 0.120 # 0.120
         # bayers calib
         rho_tau: 0.414
-        gamma_B: 0.55 #2.3 0.13
+        gamma_B: 0.4  #2.3 0.13
         gamma_y: 1.5
 
 
@@ -165,7 +162,7 @@ steady_state:
         # tau_l: 0.175 # tax rate on labor income 0.20315766
 
         # steady state
-        y: 1.0 # effective output
+        # y: 1.0 # effective output
         D: 0
         deficit: 0
         # u: 0.0 # cyclical unemployment rate
@@ -181,12 +178,12 @@ steady_state:
         # C: 1.0 # consumption
         pi:  1.02^0.25 # inflation
         # piwn: pi # wage inflation
-        beta: 0.95382926  # discount factor
-        # B: 1.2 # bond supply
-        # MPC: 0.15
-        tau_l: 0.20207428  #tax rate # clears government budget
-        Rstar: 1.02^0.25
-        # RBr: 1S
+        beta: 0.93880593  # discount factor
+        B: 0.97122222 # bond supply
+        # MPC: 0.26
+        # tau_l: 0.20207428  #tax rate # clears government budget
+        # Top10A: 0.72
+        # Rstar: 1.02^0.25
 
 
     init_guesses:

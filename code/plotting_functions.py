@@ -4,8 +4,9 @@ import econpizza as ep
 from econpizza.tools import percentile
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-import os
+import copy
 from matplotlib import cm
+import os
 
 
 from utilities import _create_directory
@@ -78,23 +79,32 @@ def plot_IRFs_init_cond(model_paths, varlist, init_conds, save_dir):
     return models, IRF_list
 
 
-def plot_IRFs(model_paths, model_names, varlist, varnames, shock, T, save_dir):
-
-    if len(model_paths) != len(model_names):
-        raise ValueError("Number of models and model names must be the same")
+def plot_IRFs(model_path, model_specifications, steady_state_targets, varlist, varnames, shock, T, save_dir):
 
     if len(varnames) != len(varlist):
         raise ValueError("Length of varlist and varnames must be the same")
+
+    linestyle = ['-', '--', '-.', ':']
+    color = ['b', 'k', 'r', 'g']
 
     models = []
     steady_states = []
     IRF_list = []
 
-    # Load models and solve steady states
-    for path in model_paths:
-        model = ep.load(path)
-        _ = model.solve_stst()
+    base_dict = ep.parse(model_path)
+
+    # Loop over all model specifications
+    for z, specification_name in enumerate(model_specifications):
+
+        # Clone the base configuration and set steady state values
+        hank_dict = copy.deepcopy(base_dict)
+        for var_name, var_values in steady_state_targets.items():
+            hank_dict['steady_state']['fixed_values'][var_name] = var_values[z]
+
+        # Load and solve the model
+        model = ep.load(hank_dict)
         models.append(model)
+        _ = model.solve_stst()
         steady_states.append(model["stst"].copy())
 
     # Find variables index
@@ -120,30 +130,36 @@ def plot_IRFs(model_paths, model_names, varlist, varnames, shock, T, save_dir):
             if varlist[i] in {'R', 'Rn', 'Rr', 'Rstar', 'Top10C', 'Top10A', 'RBr', 'MPC', 'lowest_q_mpc'}:
                 ax.plot(
                     (path[0:T, inds[i]]),
-                    marker="o",
-                    linestyle="-",
-                    label=model_names[j],
+                    # marker="o",
+                    linestyle=linestyle[j],
+                    color=color[j],
+                    label=model_specifications[j],
+                    linewidth=2.3,
                     alpha=0.9,
                 )
                 ax.set_ylabel("Value")
             elif varlist[i] in {'D', 'deficit'}:
                 ax.plot(
                     (path[0:T, inds[i]]),
-                    marker="o",
-                    linestyle="-",
-                    label=model_names[j],
+                    # marker="o",
+                    linestyle=linestyle[j],
+                    color=color[j],
+                    label=model_specifications[j],
+                    linewidth=2.3,
                     alpha=0.9,
                 )
-                ax.axhline(0, color='red', linestyle='dotted')  # Add this line
+                ax.axhline(0, color='k', linestyle='dotted')  # Add this line
                 ax.set_ylabel("Value")
             else:
                 # plot as % deviation from Steady State
                 ax.plot(
                     (path[0:T, inds[i]] - ss[varlist[i]]) /
                     ss[varlist[i]] * 100,
-                    marker="o",
-                    linestyle="-",
-                    label=model_names[j],
+                    # marker="o",
+                    linestyle=linestyle[j],
+                    color=color[j],
+                    label=model_specifications[j],
+                    linewidth=2.3,
                     alpha=0.9,
                 )
                 ax.set_ylabel("Percent")
@@ -234,7 +250,7 @@ def plot_shocks(model_path, varlist, shock_name, shock_vals, T, Palette, save_di
     return IRF_list
 
 
-def plot_dif_params(model_path, varlist, shock, param_name, param_vals, T, Palette, save_dir):
+def plot_dif_params(model_path, varlist, shock, param_name, param_name_latex, param_vals, T, Palette, save_dir):
 
     IRF_list = []
     steady_states = []
@@ -270,7 +286,7 @@ def plot_dif_params(model_path, varlist, shock, param_name, param_vals, T, Palet
                     (path[0:T, inds[i]]),
                     linestyle="-",
                     # label=fr"{param_name} = {param_vals[j]}", # reads latex
-                    label=f"{param_name} = {param_vals[j]}",
+                    label=fr"{param_name_latex} = {param_vals[j]:.1f}",
                     alpha=0.9,
                     linewidth=2.3,
                     color=color
@@ -280,7 +296,7 @@ def plot_dif_params(model_path, varlist, shock, param_name, param_vals, T, Palet
                 ax.plot(
                     (path[0:T, inds[i]]),
                     linestyle="-",
-                    label=f"{param_name} = {param_vals[j]}",
+                    label=fr"{param_name_latex} = {param_vals[j]:.1f}",
                     alpha=0.9,
                     linewidth=2.3,
                     color=color
@@ -293,7 +309,7 @@ def plot_dif_params(model_path, varlist, shock, param_name, param_vals, T, Palet
                     (path[0:T, inds[i]] - ss[varlist[i]]) /
                     ss[varlist[i]] * 100,
                     linestyle="-",
-                    label=f"{param_name} = {param_vals[j]}",
+                    label=fr"{param_name_latex} = {param_vals[j]:.1f}",
                     alpha=0.9,
                     linewidth=2.3,
                     color=color
@@ -384,7 +400,7 @@ def plot_transition(model, varlist, varnames, new_states, T, save_dir):
         ax.hlines(y=x0[varlist[i]], xmin=-2, xmax=T+2,
                   colors='xkcd:sage green', linestyles='dashed', label='Old SS', linewidth=2)  # xkcd:steel blue
         ax.hlines(y=y0[varlist[i]], xmin=-2, xmax=T+2,
-                  colors='#fd5956', linestyles='dashed', label='New SS', linewidth=2)  # xkcd:sage green
+                  colors='goldenrod', linestyles='dashed', label='New SS', linewidth=2)  # xkcd:sage green
 
         # ax.set_ylabel("Value")
         ax.set_xlim(-2, T+2)
@@ -496,8 +512,8 @@ def plot_consumption_changes_deciles(model, new_states, save_dir):
     c1 = mod_2['steady_state']['decisions']['c']
     dist1 = mod_2['steady_state']['distributions'][0]
 
-    consumption_dist0 = _calculate_consumption_percentiles(c0, dist0)
-    consumption_dist1 = _calculate_consumption_percentiles(c1, dist1)
+    consumption_dist0 = _calculate_average_consumption_percentiles(c0, dist0)
+    consumption_dist1 = _calculate_average_consumption_percentiles(c1, dist1)
 
     deciles = jnp.arange(1, 11)
 
@@ -542,7 +558,7 @@ def plot_consumption_changes_deciles(model, new_states, save_dir):
 
     plt.tight_layout()
     plt.savefig(os.path.join("../bld", save_dir,
-                'consumption_changes_decile.pdf'))
+                'consumption_changes_decile_avg.pdf'))
     plt.close()
 
 

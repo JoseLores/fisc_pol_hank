@@ -7,10 +7,11 @@ dependencies:
   - jupyterlab
   - python=3.9
   - numpy
-  - scipy
   - matplotlib
   - pre-commit
   - scipy
   - pyyaml
   - pandas
   - networkx
+  - kaleido
+  - plotly
