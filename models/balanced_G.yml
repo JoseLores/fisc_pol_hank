@@ -11,10 +11,9 @@ definitions: |
     # jax_print can be used for debugging
     from econpizza.tools import percentile, jax_print
 
-# these lists define the relevant models objects
-variables: [ DIV, y, y_prod, w, pi, R, Rn, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, T,   revenue, Z, E, zeta, MPC, lowest_q_mpc, tau_l, UC] #, tau, g , wn G, piwn , u, nn tau_l,
-parameters: [ sigma_c, sigma_l, theta, psi, phi_pi, phi_y, rho, rho_beta, rho_r, rho_z, psi_w, theta_w, wage_markup, chi, iota, rho_g, rho_B, rho_d, rho_t , rho_tau, phi_T, phi_G, tau_p, rho_zeta,  phi_B,  gamma_bb, gamma_bp, gamma_by, gamma_B, gamma_y] #, gamma_by # , gamma_bb, gamma_bp
-shocks: [ e_beta, e_rstar, e_z, e_t, e_g, e_d , e_tau, e_B, e_zeta]
+variables: [ DIV, y, y_prod, w, pi, R, Rn, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, T,   revenue, Z, E, MPC, lowest_q_mpc, tau_l, UC] #, tau, g , wn G, piwn , u, nn tau_l,
+parameters: [ sigma_c, sigma_l, theta, psi, phi_pi, phi_y, rho, rho_beta, rho_r, rho_z, psi_w, theta_w, wage_markup, chi, iota, rho_g, rho_B, rho_d, rho_t , rho_tau, tau_p, gamma_B]
+shocks: [ e_beta, e_rstar, e_z, e_t, e_g, e_d , e_tau]
 
 distributions:
   dist:
@@ -109,7 +108,6 @@ equations:
     ~ z = zSS*(zLag/zSS)**rho_z*exp(e_z) # exogenous technology
     ~ T = TSS**(1-rho_t)*TLag**rho_t*exp(e_t) # exogenous transfers
     ~ tau_l = tau_l**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
-    ~ zeta = zeta**(1-rho_zeta)*zetaLag**rho_zeta*exp(e_zeta)
     # ~ D = DSS**(1-rho_d)*DLag**rho_d*exp(e_d) # exogenous debt
 
 
@@ -134,32 +132,15 @@ steady_state:
         rho_t: 0.7 # persistence of transfers shocks
         rho_B: 0.9 # persistence of bond supply shocks
         rho_d: 0.9 # persistence of deficit shocks
-        rho_zeta: 0.9
         iota: 0. # 0.98 # dnwr
-        phi_T: 0.3
-        phi_G: 0.06
-        phi_B: 1.2
-        zeta: 1
         tau_p: 0.120 # 0.120
-        # bayers calib
         rho_tau: 0.414
         gamma_B: 0.55 #2.3 0.13
-        gamma_y: 1.5
-
-
-        # gamma_bb: 0.047
-        # gamma_bp: -2.858
-        # gamma_by: -0.784
-        # tau_k: 0.20 # tax rate on capital income
-        # tau_l: 0.175 # tax rate on labor income 0.20315766
 
         # steady state
         y: 1.0 # effective output
         D: 0
         deficit: 0
-        # u: 0.0 # cyclical unemployment rate
-        # n: 0.33
-
         z: 1 # technology
         # G: 0.0922 # y*0.04 # gov. increase spending
         # C: y-G
@@ -183,12 +164,10 @@ steady_state:
         # Rr: Rstar # steady state real rage
         Rn: Rstar # steady state notional rage
         R: Rstar # steady state nominal rage
-        tau_l: 0.24592277
+        tau_l: 0.25
         RBr: Rstar/pi
         # y: 1
-        # G: 0.1
         # B: 1.2
-        # # DIV: 0.1
         # chi: 0.6
         UC: 1
 

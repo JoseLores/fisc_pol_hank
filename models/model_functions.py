@@ -84,9 +84,3 @@ def transfers(skills_stationary, T, Div, skills_grid):
     T = div + transf
 
     return T
-
-
-def post_tax_lincome(y_grid, tau_l, tau_p):
-    # tau_p is the progressivity of the tax system = 0 is equivalent to previous model
-    z_grid = (1-tau_l)*y_grid**(1-tau_p)
-    return z_grid
