@@ -7,4 +7,12 @@ For the reproduction, install the environment by running in conda:
 conda env create -f environment.yml
 ```
 
-Then make sure you use the installed environment and run main.py
+Then make sure you use the installed environment
+
+```bash
+conda activate thesis_loresdiz
+```
+
+and run main.py
+
+The process will take some minutes, then all results will be produced.
