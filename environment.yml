@@ -1,9 +1,10 @@
-name: thesis
+name: thesis_loresdiz
 
 channels:
   - defaults
 
 dependencies:
+  - pip
   - jupyterlab
   - python=3.9
   - numpy
@@ -13,5 +14,7 @@ dependencies:
   - pyyaml
   - pandas
   - networkx
-  - kaleido
   - plotly
+  - pip:
+    - kaleido
+    - econpizza==0.6.1

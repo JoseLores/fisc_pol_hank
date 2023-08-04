@@ -12,12 +12,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Set the current working directory to the directory of the script
 os.chdir(current_dir)
 
-# ['../models/balanced_tau.yml', '../models/balanced_T.yml'] # , '../models/debt_financed_tau.yml'
-# model_path = '../models/transition_good_MPC.yml'
+
 model_path = ['../models/transition_baseline.yml',
               '../models/transition_adjust_tau.yml']
+
 varlist = ['y', 'C', 'G', 'pi', 'n', 'DIV', 'D', 'revenue', 'Z',
            'B', 'R', 'RBr', 'w', 'tau_l', 'T']
+
 varnames = ['Output', 'Consumption', 'Government Consumption', 'Inflation', 'Labor Supply', 'Profits', 'Deficit', 'Government Revenue',
             'Post-tax Average Income', 'Bonds', 'Nominal Interest Rate', 'Ex-post Interest Rate', 'Real Wage', 'Average Tax Rate on Labor', 'Transfers']
 

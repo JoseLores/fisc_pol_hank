@@ -8,7 +8,8 @@ import os
 import copy
 import pickle
 
-# TODO: create tables directory automatically
+from utilities import _create_directory
+from multipliers_functions import compute_mult, impulse_response
 
 # Get the current directory of the script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -16,108 +17,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Set the current working directory to the directory of the script
 os.chdir(current_dir)
 
-# functions shoul be in another file
-
-b = 1
-
-
-def compute_mult(shock_type, intervention, baseline, model):
-
-    ind_y = model['variables'].index('y')
-    ind = model['variables'].index(shock_type)
-
-    # Calculate the changes in output and government spending
-    output_difference = jnp.sum(
-        intervention[1:200, ind_y] - baseline[1:200, ind_y])
-    government_shock_difference = jnp.sum(
-        intervention[1:200, ind] - baseline[1:200, ind])
-
-    # Compute the fiscal multipliers
-    fiscal_multiplier = output_difference / government_shock_difference
-
-    return fiscal_multiplier
-
-
-def impulse_response(shock_size, shock_type,  shock_beta, model):
-
-    x0 = model['stst'].copy()
-    x0['beta'] *= shock_beta
-
-    baseline, _ = model.find_path(init_state=x0.values())
-
-    x0[shock_type] *= shock_size
-
-    intervention, _ = model.find_path(init_state=x0.values())
-
-    return baseline, intervention
-
-
-# def generate_latex_table(results, changes):
-#     column_names = ['Shock'] + ['Baseline' if val is None else f"$\{key}={val}$"
-#                                 for name, change in changes.items() for key, val in (change or {}).items()]
-
-#     latex_table = '\\begin{tabular}{l' + \
-#         '*{%d}{c}' % (len(column_names)) + '}\n'
-#     latex_table += '\\toprule\n'
-#     latex_table += ' & '.join(column_names) + '\\\\\n'
-#     latex_table += '\\midrule\n'
-
-#     for i, (shock, data) in enumerate(results.items()):
-#         row_data = [
-#             f'{data[column_name]:.2f}' for column_name in changes.keys()]
-#         latex_table += f'{shock} & ' + ' & '.join(row_data) + ' \\\\\n'
-#         if i < len(results) - 1:
-#             latex_table += '\\addlinespace[0.5em]\n'
-
-#     latex_table += '\\bottomrule\n'
-#     latex_table += '\\end{tabular}'
-
-#     return latex_table
-
-def results_to_latex_table(results, shock_names, model_specifications):
-    policy_names = [
-        'Labor taxes',
-        r'$\Delta G = - \Delta T$',
-        'Debt and Labor taxes'
-    ]
-
-    table = r"""
-    \begin{table}[ht]
-    \centering
-    \begin{threeparttable}
-    \caption{Fiscal Multipliers for Different Shocks and Financing Methods}
-    \begin{tabular}{lcccccc}
-    \toprule
-    & \multicolumn{3}{c}{T Shock} & \multicolumn{3}{c}{G Shock} \\
-    \cline{2-4} \cline{5-7}
-    & Low-MPC & Mid-MPC & High-MPC & Low-MPC & Mid-MPC & High-MPC \\
-    \midrule
-    """
-    for policy_name in policy_names:
-        row = f"{policy_name} "
-        for shock_name in shocks:
-            for specification_name in model_specifications:
-                try:
-                    multiplier = results[(
-                        shock_name, specification_name, policy_name)]
-                except KeyError:
-                    multiplier = ''
-                row += f"& {multiplier:.2f} "
-        row += r'\\'
-        table += row + '\n'
-
-    table += r"""
-    \bottomrule
-    \end{tabular}
-    \label{table:3}
-    \begin{tablenotes}
-    \item[] T shock is a 1\% increase in uniform transfers. G shock is a 1\% increase in government expenditure. $\Delta G = - \Delta T$ means that the increase in transfers is financed by cuts in public expenditure and vice versa. Debt means that we follow the proposed deficit rule.
-    \end{tablenotes}
-    \end{threeparttable}
-    \end{table}
-    """
-    return table
-
+_create_directory('figures')
 
 ##############################################################################################
 model_paths = [
@@ -190,8 +90,55 @@ with open('data.pickle', 'wb') as pickle_file:
 
 
 # Generate the LaTeX table
-latex_table = results_to_latex_table(
+latex_table = _results_to_latex_table(
     results, shock_names, model_specifications)
 
-with open('../tables/Table_3.tex', 'w') as f:
+with open('../bld/figures/Table_3.tex', 'w') as f:
     f.write(latex_table)
+
+##############################################################################################
+
+
+def _results_to_latex_table(results, shock_names, model_specifications):
+    policy_names = [
+        'Labor taxes',
+        r'$\Delta G = - \Delta T$',
+        'Debt and Labor taxes'
+    ]
+
+    table = r"""
+    \begin{table}[ht]
+    \centering
+    \begin{threeparttable}
+    \caption{Fiscal Multipliers for Different Shocks and Financing Methods}
+    \begin{tabular}{lcccccc}
+    \toprule
+    & \multicolumn{3}{c}{T Shock} & \multicolumn{3}{c}{G Shock} \\
+    \cline{2-4} \cline{5-7}
+    & Low-MPC & Mid-MPC & High-MPC & Low-MPC & Mid-MPC & High-MPC \\
+    \midrule
+    """
+    for policy_name in policy_names:
+        row = f"{policy_name} "
+        for shock_name in shocks:
+            for specification_name in model_specifications:
+                try:
+                    multiplier = results[(
+                        shock_name, specification_name, policy_name)]
+                except KeyError:
+                    multiplier = ''
+                row += f"& {multiplier:.2f} "
+        row += r'\\'
+        table += row + '\n'
+
+    table += r"""
+    \bottomrule
+    \end{tabular}
+    \label{table:3}
+    \begin{tablenotes}
+    \item[] T shock is a 1\% increase in uniform transfers. G shock is a 1\% increase in government expenditure. $\Delta G = - \Delta T$ means that the increase in transfers is financed by cuts in public expenditure and vice versa. Debt means that we follow the proposed deficit rule.
+    \end{tablenotes}
+    \end{threeparttable}
+    \end{table}
+    """
+    return table

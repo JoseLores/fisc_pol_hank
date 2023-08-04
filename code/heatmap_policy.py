@@ -10,7 +10,8 @@ import pickle
 import plotly.graph_objects as go
 import plotly.io as pio
 
-# TODO: create tables directory automatically
+from utilities import _create_directory
+from multipliers_functions import compute_mult, impulse_response
 
 # Get the current directory of the script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,38 +19,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Set the current working directory to the directory of the script
 os.chdir(current_dir)
 
-# functions should be in another file
-
-
-def compute_mult(shock_type, intervention, baseline, model):
-
-    ind_y = model['variables'].index('y')
-    ind = model['variables'].index(shock_type)
-
-    # Calculate the changes in output and government spending
-    output_difference = jnp.sum(
-        intervention[1:200, ind_y] - baseline[1:200, ind_y])
-    government_shock_difference = jnp.sum(
-        intervention[1:200, ind] - baseline[1:200, ind])
-
-    # Compute the fiscal multipliers
-    fiscal_multiplier = output_difference / government_shock_difference
-
-    return fiscal_multiplier
-
-
-def impulse_response(shock_size, shock_type,  shock_beta, model):
-
-    x0 = model['stst'].copy()
-    x0['beta'] *= shock_beta
-
-    baseline, _ = model.find_path(init_state=x0.values())
-
-    x0[shock_type] *= shock_size
-
-    intervention, _ = model.find_path(init_state=x0.values())
-
-    return baseline, intervention
+_create_directory('figures')
 
 
 ##############################################################################################
@@ -171,8 +141,8 @@ fig.update_layout(
 
 # Save the figure
 try:
-    pio.write_image(fig, '../tables/heatmap_policy_2.pdf')
+    pio.write_image(fig, '../bld/figures/heatmap_policy_2.pdf')
     print("Figure saved as PDF.")
 except:
-    fig.write_image('../tables/heatmap_policy_2.png')
+    fig.write_image('../bld/figures/heatmap_policy_2.png')
     print("Figure saved as PNG.")
