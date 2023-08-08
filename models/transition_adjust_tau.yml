@@ -73,7 +73,7 @@ equations:
     ~ lowest_q_mpc = low_mpc
 
     # firms
-    ~ y_prod = z*n# production function
+    ~ y_prod = z*n # production function
     ~ DIV = -w*n + (1 - psi*(pi/piSS - 1)**2/2)*y_prod # dividends
     ~ y = (1 - psi*(pi/piSS - 1)**2/2)*y_prod # "effective" output
     ~ psi*(pi/piSS - 1)*pi/piSS = (1-theta) + theta*w/z + psi*piPrime/R*(piPrime/piSS - 1)*piPrime/piSS*y_prodPrime/y_prod # NKPC
@@ -144,7 +144,7 @@ steady_state:
         D: 0
         deficit: 0
         z: 1 # technology
-        # G: 0.0922 # y*0.04 # gov. increase spending
+        G: 0.0922 # y*0.04 # gov. increase spending
         # C: y-G
         # RBr: 1
         T: 0.082

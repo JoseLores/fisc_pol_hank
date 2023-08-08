@@ -13,24 +13,24 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 
 
-model_path = ['../models/transition_baseline.yml',
-              '../models/transition_adjust_tau.yml']
+model_paths = ['../models/transition_baseline.yml',
+               '../models/transition_adjust_tau.yml']
 
 varlist = ['y', 'C', 'G', 'pi', 'n', 'DIV', 'D', 'revenue', 'Z',
            'B', 'R', 'RBr', 'w', 'tau_l', 'T']
 
 varnames = ['Output', 'Consumption', 'Government Consumption', 'Inflation', 'Labor Supply', 'Profits', 'Deficit', 'Government Revenue',
-            'Post-tax Average Income', 'Bonds', 'Nominal Interest Rate', 'Ex-post Interest Rate', 'Real Wage', 'Average Tax Rate on Labor', 'Transfers']
+            'Post-tax Average Income', 'Real Bonds', 'Nominal Interest Rate', 'Ex-post Interest Rate', 'Real Wage', 'Average Tax Rate on Labor', 'Transfers']
 
 save_dir = ['steady_state_transitions', 'steady_state_transitions_robustness']
 
-new_states = {'tau_p': 0.132}  # , 'Rstar': 1.03**25
+new_states = {'tau_p': 0.132}
 
 for i, model in enumerate(model_paths):
 
-    irfs = plot_transition(model_path, varlist, varnames,
-                           new_states, 50, save_dir)
+    irfs = plot_transition(model, varlist, varnames,
+                           new_states, 50, save_dir[i])
 
-    plot_consumption_changes_skill(model_path, new_states, save_dir)
+    plot_consumption_changes_skill(model, new_states, save_dir[i])
 
-    plot_consumption_changes_deciles(model_path, new_states, save_dir)
+    plot_consumption_changes_deciles(model, new_states, save_dir[i])
