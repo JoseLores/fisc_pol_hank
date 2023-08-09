@@ -79,7 +79,8 @@ def plot_IRFs(model_path, model_specifications, steady_state_targets, varlist, v
                     linewidth=10,
                     alpha=0.9,
                 )
-                ax.axhline(0, color='k', linestyle='dotted')  # Add this line
+                ax.axhline(0, color='k', linestyle='dotted',
+                           linewidth=5)  # Add this line
 
             else:
                 # plot as % deviation from Steady State
@@ -162,7 +163,8 @@ def plot_shocks(model_path, varlist, varnames, shock_name, shock_vals, T, Palett
                     linewidth=10,
                     color=color
                 )
-                ax.axhline(0, color='k', linestyle='dotted')  # Add this line
+                ax.axhline(0, color='k', linestyle='dotted',
+                           linewidth=5)  # Add this line
 
             else:
                 # plot as % deviation from Steady State
@@ -242,7 +244,8 @@ def plot_dif_params(model_path, varlist, varnames, shock, param_name, param_name
                     linewidth=10,
                     color=color
                 )
-                ax.axhline(0, color='red', linestyle='dotted')  # Add this line
+                ax.axhline(0, color='k', linestyle='dotted',
+                           linewidth=5)  # Add this line
 
             else:
                 # plot as % deviation from Steady State

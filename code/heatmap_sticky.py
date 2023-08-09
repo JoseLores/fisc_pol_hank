@@ -138,5 +138,5 @@ fig.update_layout(
 pio.write_image(fig, '../bld/figures/heatmap_sticky.pdf')
 print("Figure saved as PDF.")
 
-fig.write_image('..bld/figures/heatmap_sticky.png')
+fig.write_image('../bld/figures/heatmap_sticky.png')
 print("Figure saved as PNG.")
