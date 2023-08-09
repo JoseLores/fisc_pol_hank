@@ -103,14 +103,14 @@ equations:
     ~ B = aggr_a # bond market clearing
 
     # exogenous
-    ~ G = GSS*(GLag/GSS)**rho_g*exp(e_g) # exogenous gov. spending
+    ~ G = GSS**(1-rho_g)*GLag**rho_g*exp(e_g) # exogenous gov. spending
     ~ beta = betaSS*(betaLag/betaSS)**rho_beta*exp(e_beta) # exogenous beta
     ~ Rstar = RstarSS*(RstarLag/RstarSS)**rho_r*exp(e_rstar) # exogenous rstar
     ~ z = zSS*(zLag/zSS)**rho_z*exp(e_z) # exogenous technology
     # ~ B = BSS*(BLag/BSS)**rho_B*exp(e_B)
     # ~ d = (dLag/dSS)**rho_B*exp(e_B) # exogenous debt
     ~ T = TSS**(1-rho_t)*TLag**rho_t*exp(e_t) # exogenous transfers
-    # ~ tau_l = tau_l**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
+    # ~ tau_l = tau_lSS**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
 
 
 steady_state:

@@ -135,9 +135,9 @@ fig.update_layout(
 )
 
 # Save the figure
-try:
-    pio.write_image(fig, '../bld/figures/heatmap_sticky.pdf')
-    print("Figure saved as PDF.")
-except:
-    fig.write_image('..bld//figures/heatmap_sticky.png')
-    print("Figure saved as PNG.")
+
+pio.write_image(fig, '../bld/figures/heatmap_sticky.pdf')
+print("Figure saved as PDF.")
+
+fig.write_image('..bld/figures/heatmap_sticky.png')
+print("Figure saved as PNG.")

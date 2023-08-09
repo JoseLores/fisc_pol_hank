@@ -19,7 +19,7 @@ definitions: |
 
 # these lists define the relevant models objects
 variables: [ DIV, y, y_prod, w, pi, R, Rn, Rstar, z, beta, C, n, B, Top10C, Top10A, piwn, wn,  G, RBr, T,   revenue, Z, E, MPC, lowest_q_mpc, tau_l, D, UC] #, tau, g , wn G, piwn , u, nn tau_l,
-parameters: [ sigma_c, sigma_l, theta, psi, phi_pi, phi_y, rho, rho_beta, rho_r, rho_z, psi_w, theta_w, wage_markup, chi, iota, rho_g, rho_B, rho_d, rho_t , rho_tau, phi_T, phi_G, tau_p,  phi_B,  gamma_bb, gamma_bp, gamma_by, gamma_B, gamma_y] #, gamma_by # , gamma_bb, gamma_bp
+parameters: [ sigma_c, sigma_l, theta, psi, phi_pi, phi_y, rho, rho_beta, rho_r, rho_z, psi_w, theta_w, wage_markup, chi, iota, rho_g, rho_B, rho_d, rho_t , rho_tau, tau_p,  phi_D, gamma_B] #, gamma_by # , gamma_bb, gamma_bp
 shocks: [ e_beta, e_rstar, e_z, e_t, e_g, e_d , e_tau, e_B]
 
 distributions:
@@ -111,15 +111,15 @@ equations:
     ~ B = aggr_a # bond market clearing
 
     # exogenous
-    ~ G = GSS*(GLag/GSS)**rho_g*exp(e_g) # exogenous gov. spending
+    ~ G = GSS**(1-rho_g)*GLag**rho_g*exp(e_g) # exogenous gov. spending
     ~ beta = betaSS*(betaLag/betaSS)**rho_beta*exp(e_beta) # exogenous beta
     ~ Rstar = RstarSS*(RstarLag/RstarSS)**rho_r*exp(e_rstar) # exogenous rstar
     ~ z = zSS*(zLag/zSS)**rho_z*exp(e_z) # exogenous technology
     # ~ B = BSS*(BLag/BSS)**rho_B*exp(e_B)
-    ~ D = rho_d * DLag + (BSS-B)*0.005 + e_d # exogenous debt # this works
+    ~ D = rho_d * DLag + (BSS-B)*phi_D + e_d # exogenous debt # this works
     # ~ D = rho_d * DLag + (BSS-B)**0.1 + e_d
     # ~ T = TSS**(1-rho_t)*TLag**rho_t*exp(e_t) # exogenous transfers
-    ~ tau_l = tau_l**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
+    ~ tau_l = tau_lSS**(1-rho_tau)*tau_lLag**rho_tau*exp(e_tau)
     # ~ D = DSS*(DLag/DSS)**rho_d*(B/BSS)**(gamma_B*(1-rho_d))*exp(e_t)**phi_T # exogenous debt
 
 
@@ -146,6 +146,7 @@ steady_state:
         rho_d: 0.9 # persistence of deficit shocks
         iota: 0 # 0.98 # dnwr
         tau_p: 0.120 # 0.120
+        phi_D: 0.005
         # bayers calib
         rho_tau: 0.414
         gamma_B: 0.4  #2.3 0.13

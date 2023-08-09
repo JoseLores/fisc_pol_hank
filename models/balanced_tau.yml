@@ -100,7 +100,7 @@ equations:
     ~ B = aggr_a # bond market clearing
 
     # exogenous
-    ~ G = GSS*(GLag/GSS)**rho_g*exp(e_g) # exogenous gov. spending
+    ~ G = GSS**(1-rho_g)*GLag**rho_g*exp(e_g) # exogenous gov. spending
     ~ beta = betaSS*(betaLag/betaSS)**rho_beta*exp(e_beta) # exogenous beta
     ~ Rstar = RstarSS*(RstarLag/RstarSS)**rho_r*exp(e_rstar) # exogenous rstar
     ~ z = zSS*(zLag/zSS)**rho_z*exp(e_z) # exogenous technology

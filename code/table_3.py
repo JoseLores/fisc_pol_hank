@@ -20,6 +20,55 @@ os.chdir(current_dir)
 _create_directory('figures')
 
 ##############################################################################################
+# Function for generating latex table
+
+
+def _results_to_latex_table(results, shock_names, model_specifications):
+    policy_names = [
+        'Labor taxes',
+        r'$\Delta G = - \Delta T$',
+        'Debt'
+    ]
+
+    table = r"""
+    \begin{table}[t]
+    \centering
+    \begin{threeparttable}
+    \caption{Fiscal Multipliers for Different Shocks and Financing Methods}
+    \begin{tabular}{lcccccc}
+    \toprule
+    & \multicolumn{3}{c}{T Shock} & \multicolumn{3}{c}{G Shock} \\
+    \cline{2-4} \cline{5-7}
+    & Low-MPC & Mid-MPC & High-MPC & Low-MPC & Mid-MPC & High-MPC \\
+    \midrule
+    """
+    for policy_name in policy_names:
+        row = f"{policy_name} "
+        for shock_name in shocks:
+            for specification_name in model_specifications:
+                try:
+                    multiplier = results[(
+                        shock_name, specification_name, policy_name)]
+                except KeyError:
+                    multiplier = ''
+                row += f"& {multiplier:.2f} "
+        row += r'\\'
+        table += row + '\n'
+
+    table += r"""
+    \bottomrule
+    \end{tabular}
+    \label{table:3}
+    \begin{tablenotes}
+    \item[] T shock is a 1\% increase in uniform transfers. G shock is a 1\% increase in government expenditure. $\Delta G = - \Delta T$ means that the increase in transfers is financed by cuts in public expenditure and vice versa. Debt means that it follows the proposed deficit rule.
+    \end{tablenotes}
+    \end{threeparttable}
+    \end{table}
+    """
+    return table
+
+
+##############################################################################################
 model_paths = [
     '../models/balanced_tau.yml',
     '../models/balanced_T.yml',
@@ -95,50 +144,3 @@ latex_table = _results_to_latex_table(
 
 with open('../bld/figures/Table_3.tex', 'w') as f:
     f.write(latex_table)
-
-##############################################################################################
-
-
-def _results_to_latex_table(results, shock_names, model_specifications):
-    policy_names = [
-        'Labor taxes',
-        r'$\Delta G = - \Delta T$',
-        'Debt and Labor taxes'
-    ]
-
-    table = r"""
-    \begin{table}[t]
-    \centering
-    \begin{threeparttable}
-    \caption{Fiscal Multipliers for Different Shocks and Financing Methods}
-    \begin{tabular}{lcccccc}
-    \toprule
-    & \multicolumn{3}{c}{T Shock} & \multicolumn{3}{c}{G Shock} \\
-    \cline{2-4} \cline{5-7}
-    & Low-MPC & Mid-MPC & High-MPC & Low-MPC & Mid-MPC & High-MPC \\
-    \midrule
-    """
-    for policy_name in policy_names:
-        row = f"{policy_name} "
-        for shock_name in shocks:
-            for specification_name in model_specifications:
-                try:
-                    multiplier = results[(
-                        shock_name, specification_name, policy_name)]
-                except KeyError:
-                    multiplier = ''
-                row += f"& {multiplier:.2f} "
-        row += r'\\'
-        table += row + '\n'
-
-    table += r"""
-    \bottomrule
-    \end{tabular}
-    \label{table:3}
-    \begin{tablenotes}
-    \item[] T shock is a 1\% increase in uniform transfers. G shock is a 1\% increase in government expenditure. $\Delta G = - \Delta T$ means that the increase in transfers is financed by cuts in public expenditure and vice versa. Debt means that we follow the proposed deficit rule.
-    \end{tablenotes}
-    \end{threeparttable}
-    \end{table}
-    """
-    return table

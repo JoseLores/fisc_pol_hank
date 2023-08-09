@@ -16,6 +16,9 @@ model_path = '../models/baseline.yml'
 varlist = ['y', 'C', 'G', 'pi', 'n', 'DIV', 'Z', 'R', 'piwn',
            'B', 'revenue', 'w', 'T', 'RBr', 'tau_l', 'D']
 
+varnames = ['Output', 'Consumption', 'Government Consumption', 'Inflation', 'Labor Supply', 'Profits', 'Post-tax Average Income', 'Nominal Interest Rate',
+            'Wage Inflation', 'Real Bonds', 'Government Revenue', 'Real Wage', 'Transfers', 'Ex-post Interest Rate', 'Average Tax Rate on Labor', 'Deficit']
+
 ##########################################################################
 
 param_name = 'phi_pi'
@@ -26,7 +29,7 @@ save_dir = "phi_pi_robustness"
 Palette = 'Blues'
 # models, IRF_list = plot_IRFs(model_paths, varlist, shock, save_dir)
 # initial_conditions = {'B': 1.001, 'G': 1.01}
-IRF_list = plot_dif_params(model_path, varlist, shock,
+IRF_list = plot_dif_params(model_path, varlist, varnames, shock,
                            param_name, param_name_latex, param_vals, 50, Palette, save_dir)
 # plot_wealth_distribution(IRF_list, models, save_dir)
 
@@ -40,6 +43,6 @@ save_dir = "gamma_B_robustness"
 Palette = 'Reds'
 # models, IRF_list = plot_IRFs(model_paths, varlist, shock, save_dir)
 # initial_conditions = {'B': 1.001, 'G': 1.01}
-IRF_list = plot_dif_params(model_path, varlist, shock,
+IRF_list = plot_dif_params(model_path, varlist, varnames, shock,
                            param_name, param_name_latex, param_vals, 50, Palette, save_dir)
 # plot_wealth_distribution(IRF_list, models, save_dir)

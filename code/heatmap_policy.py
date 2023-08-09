@@ -140,9 +140,8 @@ fig.update_layout(
 )
 
 # Save the figure
-try:
-    pio.write_image(fig, '../bld/figures/heatmap_policy_2.pdf')
-    print("Figure saved as PDF.")
-except:
-    fig.write_image('../bld/figures/heatmap_policy_2.png')
-    print("Figure saved as PNG.")
+fig.write_image('../bld/figures/heatmap_policy.png')
+print("Figure saved as PNG.")
+
+pio.write_image(fig, '../bld/figures/heatmap_policy.pdf')
+print("Figure saved as PDF.")

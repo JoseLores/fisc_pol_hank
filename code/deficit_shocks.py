@@ -14,14 +14,16 @@ os.chdir(current_dir)
 model_path = '../models/debt_shock_T.yml'
 
 varlist = ['y', 'C', 'D', 'G', 'pi', 'n', 'DIV', 'Z', 'R', 'RBr',
-           'B', 'revenue', 'w', 'T', 'RBr', 'tau_l']
+           'B', 'revenue', 'w', 'T', 'tau_l']
+
+varnames = ['Output', 'Consumption', 'Deficit', 'Government Consumption', 'Inflation', 'Labor Supply', 'Profits', 'After-tax income',
+            'Nominal Interest Rate',  'Ex-post Interest Rate', 'Real Bonds', 'Government Revenue', 'Real Wage', 'Transfers', 'Average Tax Rate on Labor']
 
 shock_name = 'e_d'
 shock_vals = [0.00025, 0.0005, 0.00075, 0.001, 0.00125]
 save_dir = "deficit_shocks_transfers"
 Palette = 'Purples'
-# models, IRF_list = plot_IRFs(model_paths, varlist, shock, save_dir)
-# initial_conditions = {'B': 1.001, 'G': 1.01}
-IRF_list = plot_shocks(model_path, varlist, shock_name,
+
+IRF_list = plot_shocks(model_path, varlist, varnames, shock_name,
                        shock_vals, 50, Palette, save_dir)
 # plot_wealth_distribution(IRF_list, models, save_dir)

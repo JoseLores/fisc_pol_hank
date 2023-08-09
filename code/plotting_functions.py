@@ -12,73 +12,6 @@ import os
 from utilities import _create_directory
 
 
-def plot_IRFs_init_cond(model_paths, varlist, init_conds, save_dir):
-    models = []
-    steady_states = []
-    IRF_list = []
-
-    # Load models and solve steady states
-    for path in model_paths:
-        model = ep.load(path)
-        _ = model.solve_stst()
-        models.append(model)
-        steady_states.append(model["stst"].copy())
-
-    for x0 in steady_states:
-        for key, value in init_conds.items():
-            x0[key] *= value
-
-    # Find variables index
-    inds_models = [[model["variables"].index(
-        v) for v in varlist] for model in models]
-
-    # Find IRFs
-    paths, flags = zip(*[model.find_path(init_state=steady_states[i].values())
-                       for i, model in enumerate(models)])
-
-    [IRF_list.append(path) for path in paths]
-
-    # Create directories for saving the plots
-    _create_directory(save_dir)
-
-    # Plot IRFs
-    for i in range(len(varlist)):
-        fig, ax = plt.subplots(figsize=(8, 5))
-        for j, path in enumerate(paths):
-            model = models[j]
-            ss = steady_states[j]
-            inds = inds_models[j]
-            # We don't want interest rate as a percentage deviation
-            if varlist[i] in {'R', 'Rn', 'Rr', 'pi', 'Rstar', 'Top10C', 'Top10A', 'RBr', 'tau_l', 'MPC', 'lowest_q_mpc'}:
-                ax.plot(
-                    (path[0:30, inds[i]]),
-                    marker="o",
-                    linestyle="-",
-                    label=f"Model {j}",
-                    alpha=0.9,
-                )
-                ax.set_ylabel("Value")
-            else:
-                # plot as % deviation from Steady State
-                ax.plot(
-                    (path[0:30, inds[i]] - ss[varlist[i]]) /
-                    ss[varlist[i]] * 100,
-                    marker="o",
-                    linestyle="-",
-                    label=f"Model {j}",
-                    alpha=0.9,
-                )
-                ax.set_ylabel("Percent")
-
-        ax.set_title(varlist[i], size="18")
-        ax.set_xlabel("Quarters")
-        ax.legend()
-        plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
-        plt.close()
-
-    return models, IRF_list
-
-
 def plot_IRFs(model_path, model_specifications, steady_state_targets, varlist, varnames, shock, T, save_dir):
 
     if len(varnames) != len(varlist):
@@ -121,7 +54,7 @@ def plot_IRFs(model_path, model_specifications, steady_state_targets, varlist, v
 
     # Plot IRFs
     for i in range(len(varlist)):
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(13, 10))
         for j, path in enumerate(paths):
             model = models[j]
             ss = steady_states[j]
@@ -134,10 +67,10 @@ def plot_IRFs(model_path, model_specifications, steady_state_targets, varlist, v
                     linestyle=linestyle[j],
                     color=color[j],
                     label=model_specifications[j],
-                    linewidth=2.3,
+                    linewidth=10,
                     alpha=0.9,
                 )
-                ax.set_ylabel("Value")
+
             elif varlist[i] in {'D', 'deficit'}:
                 ax.plot(
                     (path[0:T, inds[i]]),
@@ -145,11 +78,11 @@ def plot_IRFs(model_path, model_specifications, steady_state_targets, varlist, v
                     linestyle=linestyle[j],
                     color=color[j],
                     label=model_specifications[j],
-                    linewidth=2.3,
+                    linewidth=10,
                     alpha=0.9,
                 )
                 ax.axhline(0, color='k', linestyle='dotted')  # Add this line
-                ax.set_ylabel("Value")
+
             else:
                 # plot as % deviation from Steady State
                 ax.plot(
@@ -159,21 +92,26 @@ def plot_IRFs(model_path, model_specifications, steady_state_targets, varlist, v
                     linestyle=linestyle[j],
                     color=color[j],
                     label=model_specifications[j],
-                    linewidth=2.3,
+                    linewidth=10,
                     alpha=0.9,
                 )
-                ax.set_ylabel("Percent")
 
-        ax.set_title(varnames[i], size="22")
-        ax.set_xlabel("Quarters")
-        ax.legend()
+        plt.xticks(fontsize=26)
+        plt.yticks(fontsize=26)
+
+        ax.set_title(varnames[i], size="42")
+        ax.set_xlabel("Quarters", size="26")
+        if varlist[i] == 'y':
+            ax.legend(fontsize=40)  # fontsize='large'
         plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
         plt.close()
 
     return models, IRF_list
 
 
-def plot_shocks(model_path, varlist, shock_name, shock_vals, T, Palette, save_dir):
+def plot_shocks(model_path, varlist, varnames, shock_name, shock_vals, T, Palette, save_dir):
+    if len(varlist) != len(varnames):
+        raise ValueError("varlist and varnames must be of same length")
     IRF_list = []
     shocks_list = []
 
@@ -202,7 +140,7 @@ def plot_shocks(model_path, varlist, shock_name, shock_vals, T, Palette, save_di
 
     # Plot IRFs
     for i in range(len(varlist)):
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(13, 10))
         for j, path in enumerate(paths):
             color = cmap(float(j+1)/len(paths))   # Use colormap
 
@@ -213,21 +151,21 @@ def plot_shocks(model_path, varlist, shock_name, shock_vals, T, Palette, save_di
                     linestyle="-",
                     label=f"{shock_name} = {shock_vals[j]}",
                     alpha=0.9,
-                    linewidth=2.3,
+                    linewidth=10,
                     color=color
                 )
-                ax.set_ylabel("Value")
+
             elif varlist[i] in {'D', 'deficit'}:
                 ax.plot(
                     (path[0:T, inds[i]]),
                     linestyle="-",
                     label=f"{shock_name} = {shock_vals[j]}",
                     alpha=0.9,
-                    linewidth=2.3,
+                    linewidth=10,
                     color=color
                 )
                 ax.axhline(0, color='k', linestyle='dotted')  # Add this line
-                ax.set_ylabel("Value")
+
             else:
                 # plot as % deviation from Steady State
                 ax.plot(
@@ -236,21 +174,26 @@ def plot_shocks(model_path, varlist, shock_name, shock_vals, T, Palette, save_di
                     linestyle="-",
                     label=f"{shock_name} = {shock_vals[j]}",
                     alpha=0.9,
-                    linewidth=2.3,
+                    linewidth=10,
                     color=color
                 )
-                ax.set_ylabel("Percent")
 
-        ax.set_title(varlist[i], size="22")
-        ax.set_xlabel("Quarters")
-        ax.legend()
+        plt.xticks(fontsize=26)
+        plt.yticks(fontsize=26)
+
+        ax.set_title(varnames[i], size="42")
+        ax.set_xlabel("Quarters", size="26")
+        if varlist[i] == 'y':
+            ax.legend(fontsize=40)  # fontsize='large'
         plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
         plt.close()
 
     return IRF_list
 
 
-def plot_dif_params(model_path, varlist, shock, param_name, param_name_latex, param_vals, T, Palette, save_dir):
+def plot_dif_params(model_path, varlist, varnames, shock, param_name, param_name_latex, param_vals, T, Palette, save_dir):
+    if len(varlist) != len(varnames):
+        raise ValueError("varlist and varnames must be of same length")
 
     IRF_list = []
     steady_states = []
@@ -276,7 +219,7 @@ def plot_dif_params(model_path, varlist, shock, param_name, param_name_latex, pa
 
     # Plot IRFs
     for i in range(len(varlist)):
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(13, 10))
         for j, path in enumerate(IRF_list):
             color = cmap(float(j+1)/len(IRF_list))   # Use colormap
             ss = steady_states[j]
@@ -288,21 +231,21 @@ def plot_dif_params(model_path, varlist, shock, param_name, param_name_latex, pa
                     # label=fr"{param_name} = {param_vals[j]}", # reads latex
                     label=fr"{param_name_latex} = {param_vals[j]:.1f}",
                     alpha=0.9,
-                    linewidth=2.3,
+                    linewidth=10,
                     color=color
                 )
-                ax.set_ylabel("Value")
+
             elif varlist[i] in {'D', 'deficit'}:
                 ax.plot(
                     (path[0:T, inds[i]]),
                     linestyle="-",
                     label=fr"{param_name_latex} = {param_vals[j]:.1f}",
                     alpha=0.9,
-                    linewidth=2.3,
+                    linewidth=10,
                     color=color
                 )
                 ax.axhline(0, color='red', linestyle='dotted')  # Add this line
-                ax.set_ylabel("Value")
+
             else:
                 # plot as % deviation from Steady State
                 ax.plot(
@@ -311,14 +254,17 @@ def plot_dif_params(model_path, varlist, shock, param_name, param_name_latex, pa
                     linestyle="-",
                     label=fr"{param_name_latex} = {param_vals[j]:.1f}",
                     alpha=0.9,
-                    linewidth=2.3,
+                    linewidth=10,
                     color=color
                 )
-                ax.set_ylabel("Percent")
 
-        ax.set_title(varlist[i], size="22")
-        ax.set_xlabel("Quarters")
-        ax.legend()
+        plt.xticks(fontsize=26)
+        plt.yticks(fontsize=26)
+
+        ax.set_title(varnames[i], size="42")
+        ax.set_xlabel("Quarters", size="26")
+        if varlist[i] == 'y':
+            ax.legend(fontsize=36)  # fontsize='large'
         plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
         plt.close()
 
@@ -330,7 +276,7 @@ def plot_wealth_distribution(IRF_list, model_list, save_dir):
     # alphas = [0.5, 0.3]  # different transparency for each model
 
     for i, path in enumerate(IRF_list):
-        fig = plt.figure(figsize=(9, 7))
+        fig = plt.figure(figsize=(13, 9))
         ax = fig.add_subplot(111, projection='3d')
 
         het_vars = model_list[i].get_distributions(path)
@@ -350,6 +296,8 @@ def plot_wealth_distribution(IRF_list, model_list, save_dir):
         ax.set_ylabel('Time')
         ax.set_zlabel('Share')
 
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
         # rotate
         ax.view_init(azim=40)
 
@@ -386,28 +334,33 @@ def plot_transition(model, varlist, varnames, new_states, T, save_dir):
 
     # Plot IRFs
     for i in range(len(varlist)):
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(13, 10))
         ax.plot(
             (xst[:T, inds[i]]),
-            marker="o",
+            # marker="o",
             linestyle="-",
-            linewidth=2.5,
+            linewidth=10,
             color='xkcd:steel blue',
             # label=f"Model {j}",
             # color = (0.2, 0.2, 0.2),
             alpha=0.9,
         )
+
         ax.hlines(y=x0[varlist[i]], xmin=-2, xmax=T+2,
-                  colors='xkcd:sage green', linestyles='dashed', label='Old SS', linewidth=2)  # xkcd:steel blue
+                  colors='xkcd:sage green', linestyles='dashed', label='Old SS', linewidth=10)  # xkcd:steel blue
         ax.hlines(y=y0[varlist[i]], xmin=-2, xmax=T+2,
-                  colors='goldenrod', linestyles='dashed', label='New SS', linewidth=2)  # xkcd:sage green
+                  colors='goldenrod', linestyles='dashed', label='New SS', linewidth=10)  # xkcd:sage green
 
         # ax.set_ylabel("Value")
         ax.set_xlim(-2, T+2)
 
-        ax.set_title(varnames[i], size="22")
-        ax.set_xlabel("Quarters")
-        ax.legend()  # fontsize='large'
+        plt.xticks(fontsize=26)
+        plt.yticks(fontsize=26)
+
+        ax.set_title(varnames[i], size="42")
+        ax.set_xlabel("Quarters", size="26")
+        if varlist[i] == 'y':
+            ax.legend(fontsize=40)  # fontsize='large'
         plt.savefig(os.path.join("../bld", save_dir, varlist[i] + ".pdf"))
         plt.close()
 
@@ -461,8 +414,8 @@ def plot_consumption_changes_skill(model, new_states, save_dir):
     ax.set_axisbelow(True)
 
     # Add labels and title
-    plt.xlabel('Skill level')
-    plt.ylabel('Percentage Change in Consumption')
+    plt.xlabel('Skill level', size="16")
+    plt.ylabel('Percentage Change in Consumption', size="16")
     # plt.title('Percentage Change in Consumption for Each Decile')
 
     # Add value labels on top of each bar
@@ -470,10 +423,10 @@ def plot_consumption_changes_skill(model, new_states, save_dir):
         height = bar.get_height()
         if height > 0:
             ax.text(bar.get_x() + bar.get_width() / 2, height,
-                    f'{height:.1f}%', ha='center', va='bottom')
+                    f'{height:.1f}%', ha='center', va='bottom', size="14")
         else:
             ax.text(bar.get_x() + bar.get_width() / 2, height,
-                    f'{height:.1f}%', ha='center', va='top')
+                    f'{height:.1f}%', ha='center', va='top', size="14")
 
     # Adjust the y-axis limits to center the 0 value
     max_value = jnp.max(percentage_change)
@@ -482,6 +435,8 @@ def plot_consumption_changes_skill(model, new_states, save_dir):
     plt.ylim(-y_max, y_max)
 
     plt.tight_layout()
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
 
     plt.savefig(os.path.join("../bld", save_dir,
                 'consumption_changes_skill.pdf'))
@@ -536,8 +491,8 @@ def plot_consumption_changes_deciles(model, new_states, save_dir):
     ax.set_axisbelow(True)
 
     # Add labels and title
-    plt.xlabel('Consumption Decile')
-    plt.ylabel('Percentage Change in Consumption')
+    plt.xlabel('Consumption Decile', size="16")
+    plt.ylabel('Percentage Change in Consumption', size="16")
     # plt.title('Percentage Change in Consumption for Each Decile')
 
     # Add value labels on top of each bar
@@ -545,16 +500,18 @@ def plot_consumption_changes_deciles(model, new_states, save_dir):
         height = bar.get_height()
         if height > 0:
             ax.text(bar.get_x() + bar.get_width() / 2, height,
-                    f'{height:.1f}%', ha='center', va='bottom')
+                    f'{height:.1f}%', ha='center', va='bottom', size="14")
         else:
             ax.text(bar.get_x() + bar.get_width() / 2, height,
-                    f'{height:.1f}%', ha='center', va='top')
+                    f'{height:.1f}%', ha='center', va='top', size="14")
 
     # Adjust the y-axis limits to center the 0 value
     max_value = jnp.max(percentage_change)
     min_value = jnp.min(percentage_change)
     y_max = max(abs(max_value), abs(min_value)) * 1.1
     plt.ylim(-y_max, y_max)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
 
     plt.tight_layout()
     plt.savefig(os.path.join("../bld", save_dir,
