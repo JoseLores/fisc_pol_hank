@@ -1,6 +1,5 @@
 
 import jax.numpy as jnp
-from grgrlib import figurator, grplot
 import econpizza as ep  # pizza
 import matplotlib.pyplot as plt
 import os
@@ -58,9 +57,9 @@ for psi, psiw in itertools.product(psi_list, psiw_list):
     # Save the result for this combination
     results[(psi, psiw)] = multiplier
 
-# Save dictionary to a Pickle file
-with open('data.pickle', 'wb') as pickle_file:
-    pickle.dump(results, pickle_file)
+# # Save dictionary to a Pickle file
+# with open('data.pickle', 'wb') as pickle_file:
+#     pickle.dump(results, pickle_file)
 
 ######################################################################
 

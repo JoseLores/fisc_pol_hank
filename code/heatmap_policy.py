@@ -1,6 +1,5 @@
 
 import jax.numpy as jnp
-from grgrlib import figurator, grplot
 import econpizza as ep  # pizza
 import matplotlib.pyplot as plt
 import os
@@ -60,9 +59,9 @@ for gamma_B, phi_pi in itertools.product(gamma_B_list, phi_pi_list):
     # Save the result for this combination
     results[(float(gamma_B), float(phi_pi))] = multiplier
 
-# Save dictionary to a Pickle file
-with open('data.pickle', 'wb') as pickle_file:
-    pickle.dump(results, pickle_file)
+# # Save dictionary to a Pickle file
+# with open('data.pickle', 'wb') as pickle_file:
+#     pickle.dump(results, pickle_file)
 
 ######################################################################
 

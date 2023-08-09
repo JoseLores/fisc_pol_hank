@@ -3,7 +3,7 @@ import econpizza as ep
 import matplotlib.pyplot as plt
 import os
 
-from plotting_functions import plot_IRFs, plot_wealth_distribution
+from plotting_functions import plot_IRFs
 
 # Get the current directory of the script
 current_dir = os.path.dirname(os.path.abspath(__file__))

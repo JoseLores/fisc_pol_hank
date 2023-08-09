@@ -1,5 +1,3 @@
-from grgrlib import grbar3d
-from grgrlib import figurator, grplot
 import econpizza as ep
 from econpizza.tools import percentile
 import jax.numpy as jnp
@@ -269,42 +267,6 @@ def plot_dif_params(model_path, varlist, varnames, shock, param_name, param_name
         plt.close()
 
     return IRF_list
-
-
-def plot_wealth_distribution(IRF_list, model_list, save_dir):
-    # colors = ['blue', 'red']  # different color for each model color=colors[i],
-    # alphas = [0.5, 0.3]  # different transparency for each model
-
-    for i, path in enumerate(IRF_list):
-        fig = plt.figure(figsize=(13, 9))
-        ax = fig.add_subplot(111, projection='3d')
-
-        het_vars = model_list[i].get_distributions(path)
-        dist = het_vars['dist']
-        a_grid = model_list[i]['context']['a_grid']
-
-        # create coordinate arrays for the surface plot
-        X, Y = jnp.meshgrid(a_grid, jnp.arange(30))
-        Z = dist[..., :30].sum(0)
-
-        # plot
-        ax.bar3d(X.flatten(), Y.flatten(), jnp.zeros(
-            len(Z.flatten())), 0.2, 0.2, Z.flatten(), alpha=0.5)
-
-        # set axis labels
-        ax.set_xlabel('Wealth')
-        ax.set_ylabel('Time')
-        ax.set_zlabel('Share')
-
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
-        # rotate
-        ax.view_init(azim=40)
-
-        # save the plot
-        plt.savefig(os.path.join("../bld", save_dir,
-                    f"wealth_distribution_model_{i}.pdf"))
-        plt.close()
 
 
 def plot_transition(model, varlist, varnames, new_states, T, save_dir):

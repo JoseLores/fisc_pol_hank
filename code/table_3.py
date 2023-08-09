@@ -1,8 +1,6 @@
 
-import jax.numpy as jnp  # use jax.numpy instead of normal numpy
-# a nice backend for batch plotting with matplotlib
-from grgrlib import figurator, grplot
-import econpizza as ep  # pizza
+import jax.numpy as jnp
+import econpizza as ep
 import matplotlib.pyplot as plt
 import os
 import copy
