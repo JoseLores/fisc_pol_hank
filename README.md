@@ -1,4 +1,4 @@
-# master_thesis
+# fisc_pol_hank
 Repository for the reproduction of the figures in my master thesis "Public Policy through the Lens of Heterogeneous-Agents Models with Frictions".
 
 For the reproduction, install the environment by running in conda:
