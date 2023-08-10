@@ -29,7 +29,7 @@ def _results_to_latex_table(results, shock_names, model_specifications):
     ]
 
     table = r"""
-    \begin{table}[t]
+    \begin{table}[t!]
     \centering
     \begin{threeparttable}
     \caption{Fiscal Multipliers for Different Shocks and Financing Methods}
