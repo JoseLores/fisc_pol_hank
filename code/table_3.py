@@ -85,7 +85,7 @@ policy_names = [
     'Labor taxes',
     r'$\Delta G = - \Delta T$',
     r'$\Delta G = - \Delta T$',
-    'Debt and Labor taxes'
+    'Debt'
 ]
 
 shock_names = ['T shock', 'G shock']
