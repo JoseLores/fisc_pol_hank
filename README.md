@@ -15,4 +15,4 @@ conda activate thesis_loresdiz
 
 and run main.py
 
-The process will take some minutes, then all results will be produced.
+The process may take about two hours, then all results will be produced.
